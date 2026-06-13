@@ -48,15 +48,34 @@ class MatchSimulationService
 
         $fixture->loadMissing(['homeTeam', 'awayTeam']);
 
-        $homeAttack = $fixture->homeTeam->strength + self::HOME_ADVANTAGE;
-        $awayAttack = $fixture->awayTeam->strength;
+        [$homeScore, $awayScore] = $this->generateScore(
+            $fixture->homeTeam->strength,
+            $fixture->awayTeam->strength,
+        );
 
-        $fixture->home_score = $this->generateGoals($this->scoringChance($homeAttack, $awayAttack));
-        $fixture->away_score = $this->generateGoals($this->scoringChance($awayAttack, $homeAttack));
+        $fixture->home_score = $homeScore;
+        $fixture->away_score = $awayScore;
         $fixture->played_at = now();
         $fixture->save();
 
         return $fixture;
+    }
+
+    /**
+     * Generate a score for a hypothetical meeting of two teams without
+     * persisting anything. Shared by simulate() and the prediction engine.
+     *
+     * @return array{0: int, 1: int} [home goals, away goals]
+     */
+    public function generateScore(int $homeStrength, int $awayStrength): array
+    {
+        $homeAttack = $homeStrength + self::HOME_ADVANTAGE;
+        $awayAttack = $awayStrength;
+
+        return [
+            $this->generateGoals($this->scoringChance($homeAttack, $awayAttack)),
+            $this->generateGoals($this->scoringChance($awayAttack, $homeAttack)),
+        ];
     }
 
     /**
