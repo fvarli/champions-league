@@ -20,6 +20,20 @@ variance** keeps draws and upsets possible.
 Randomness is injected through PHP's `Random\Randomizer`, so tests can supply a
 seeded engine for reproducible results.
 
+## Orchestration
+
+Actions in `app/Actions` drive the league forward without duplicating the
+simulation logic:
+
+- `PlayWeekAction` simulates every unplayed fixture in a given week.
+- `PlayNextWeekAction` plays the earliest week that still has unplayed fixtures.
+- `PlayAllRemainingFixturesAction` plays every remaining week in order and
+  returns the played fixtures grouped by week.
+
+Each fails clearly: an unknown week throws `InvalidWeekException`, a fully
+played week throws `WeekAlreadyPlayedException`, and a finished league throws
+`LeagueAlreadyCompleteException`.
+
 ## Protections
 
 Already-played fixtures are protected: simulating a fixture that already has a
