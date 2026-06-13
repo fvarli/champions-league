@@ -16,6 +16,18 @@ docker compose up -d --build
 4. **Backend → DB** — `docker compose exec backend php artisan migrate:status`
    connects to PostgreSQL without error.
 
+## League fixtures
+
+With the four teams seeded (`php artisan migrate --seed`):
+
+```bash
+php artisan league:generate-fixtures
+```
+
+- Reports `Fixtures generated successfully.` and creates 12 rows in `matches`
+  across weeks 1–6.
+- Running it a second time fails with a clear message and creates no duplicates.
+
 ## Quality gates
 
 Run before committing:
