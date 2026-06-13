@@ -3,7 +3,9 @@ import { computed } from 'vue'
 
 import type { Fixture, WeekFixtures } from '@/types/league'
 
-const props = defineProps<{ week: WeekFixtures }>()
+const props = withDefaults(defineProps<{ week: WeekFixtures; current?: boolean }>(), {
+  current: false,
+})
 
 const allPlayed = computed(() => props.week.fixtures.every((fixture) => fixture.is_played))
 
@@ -21,9 +23,24 @@ function isWinner(fixture: Fixture, side: Side): boolean {
 </script>
 
 <template>
-  <div class="rounded-2xl border border-white/5 bg-slate-900/50 p-4">
+  <div
+    class="rounded-2xl border bg-slate-900/50 p-4 transition duration-200 hover:-translate-y-0.5"
+    :class="
+      current
+        ? 'border-emerald-500/40 ring-1 ring-emerald-500/20'
+        : 'border-white/5 hover:border-white/10'
+    "
+  >
     <div class="mb-3 flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-white">Week {{ week.week }}</h3>
+      <div class="flex items-center gap-2">
+        <h3 class="text-sm font-semibold text-white">Week {{ week.week }}</h3>
+        <span
+          v-if="current"
+          class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-300"
+        >
+          Up next
+        </span>
+      </div>
       <span
         class="rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
         :class="allPlayed ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-500/15 text-slate-400'"

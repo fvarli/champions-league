@@ -28,7 +28,7 @@ function barWidth(percentage: number): string {
       </span>
     </div>
 
-    <EmptyState v-if="notice" title="Not available yet" :message="notice" />
+    <EmptyState v-if="notice" title="Not available yet" :message="notice" icon="chart" />
 
     <ul v-else class="space-y-3">
       <li v-for="(prediction, index) in predictions" :key="prediction.team.id">

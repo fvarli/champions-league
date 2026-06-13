@@ -1,20 +1,31 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import ActionPanel from '@/components/ActionPanel.vue'
 import AppShell from '@/components/AppShell.vue'
+import ChampionBanner from '@/components/ChampionBanner.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ErrorBanner from '@/components/ErrorBanner.vue'
 import FixtureWeekCard from '@/components/FixtureWeekCard.vue'
-import LoadingState from '@/components/LoadingState.vue'
 import MetricCard from '@/components/MetricCard.vue'
 import PredictionPanel from '@/components/PredictionPanel.vue'
+import SkeletonDashboard from '@/components/SkeletonDashboard.vue'
 import StandingsTable from '@/components/StandingsTable.vue'
+import ToastHost from '@/components/ToastHost.vue'
 import { useLeagueStore } from '@/stores/league'
 
 const store = useLeagueStore()
 
 onMounted(() => store.loadDashboard())
+
+const confirmPlayAll = ref(false)
+const playingAll = computed(() => store.activeAction === 'all')
+
+async function onConfirmPlayAll(): Promise<void> {
+  await store.playAll()
+  confirmPlayAll.value = false
+}
 
 const statusLabel = computed(() => {
   if (!store.hasFixtures) {
@@ -42,80 +53,89 @@ const statusLabel = computed(() => {
       </div>
     </template>
 
-    <LoadingState v-if="store.loading" label="Loading league…" />
+    <ToastHost />
 
-    <div v-else class="space-y-6">
-      <ErrorBanner :message="store.error" @dismiss="store.dismissError" />
+    <Transition name="fade" mode="out-in">
+      <SkeletonDashboard v-if="store.loading" key="skeleton" />
 
-      <div
-        v-if="store.notice"
-        class="flex items-start justify-between gap-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
-        role="status"
-      >
-        <span>{{ store.notice }}</span>
-        <button
-          type="button"
-          class="shrink-0 rounded-md px-2 py-0.5 text-xs font-medium text-emerald-200/80 transition hover:bg-emerald-500/20 hover:text-emerald-100"
-          @click="store.dismissNotice"
-        >
-          Dismiss
-        </button>
-      </div>
+      <div v-else key="content" class="space-y-6">
+        <ErrorBanner :message="store.error" @dismiss="store.dismissError" />
 
-      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <MetricCard label="Teams" :value="store.teams.length" accent="sky" />
-        <MetricCard
-          label="Fixtures played"
-          :value="`${store.playedFixtures} / ${store.totalFixtures}`"
-          accent="emerald"
-        />
-        <MetricCard
-          label="Remaining"
-          :value="store.remainingFixtures"
-          hint="fixtures"
-          accent="amber"
-        />
-        <MetricCard label="Status" :value="statusLabel" accent="slate" />
-      </div>
+        <Transition name="pop">
+          <ChampionBanner v-if="store.champion" :standing="store.champion" />
+        </Transition>
 
-      <ActionPanel
-        :has-fixtures="store.hasFixtures"
-        :playable-weeks="store.playableWeeks"
-        :is-complete="store.isComplete"
-        :active-action="store.activeAction"
-        @generate="store.generate"
-        @play-week="store.playWeek"
-        @play-next="store.playNext"
-        @play-all="store.playAll"
-      />
-
-      <div class="grid gap-6 lg:grid-cols-3">
-        <div class="space-y-6 lg:col-span-2">
-          <StandingsTable :standings="store.standings" />
-
-          <section>
-            <h2 class="mb-3 text-sm font-semibold text-white">Fixtures</h2>
-
-            <EmptyState
-              v-if="!store.hasFixtures"
-              title="No fixtures yet"
-              message="Generate the schedule to kick off the season — twelve matches across six weeks."
-            />
-
-            <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <FixtureWeekCard v-for="week in store.weeks" :key="week.week" :week="week" />
-            </div>
-          </section>
-        </div>
-
-        <div class="space-y-6">
-          <PredictionPanel
-            :predictions="store.predictions"
-            :notice="store.predictionNotice"
-            :is-complete="store.isComplete"
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <MetricCard label="Teams" :value="store.teams.length" accent="sky" />
+          <MetricCard
+            label="Fixtures played"
+            :value="`${store.playedFixtures} / ${store.totalFixtures}`"
+            accent="emerald"
           />
+          <MetricCard
+            label="Remaining"
+            :value="store.remainingFixtures"
+            hint="fixtures"
+            accent="amber"
+          />
+          <MetricCard label="Status" :value="statusLabel" accent="slate" />
+        </div>
+
+        <ActionPanel
+          :has-fixtures="store.hasFixtures"
+          :playable-weeks="store.playableWeeks"
+          :is-complete="store.isComplete"
+          :active-action="store.activeAction"
+          @generate="store.generate"
+          @play-week="store.playWeek"
+          @play-next="store.playNext"
+          @play-all="confirmPlayAll = true"
+        />
+
+        <div class="grid gap-6 lg:grid-cols-3">
+          <div class="space-y-6 lg:col-span-2">
+            <StandingsTable :standings="store.standings" :complete="store.isComplete" />
+
+            <section>
+              <h2 class="mb-3 text-sm font-semibold text-white">Fixtures</h2>
+
+              <EmptyState
+                v-if="!store.hasFixtures"
+                title="No fixtures yet"
+                message="Generate the schedule to kick off the season — twelve matches across six weeks."
+                icon="pitch"
+              />
+
+              <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <FixtureWeekCard
+                  v-for="week in store.weeks"
+                  :key="week.week"
+                  :week="week"
+                  :current="week.week === store.currentWeek"
+                />
+              </div>
+            </section>
+          </div>
+
+          <div class="space-y-6">
+            <PredictionPanel
+              :predictions="store.predictions"
+              :notice="store.predictionNotice"
+              :is-complete="store.isComplete"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
+
+    <ConfirmModal
+      :open="confirmPlayAll"
+      title="Play all remaining fixtures?"
+      message="This simulates every unplayed match through to the end of the season. It can't be undone."
+      confirm-label="Play All"
+      :busy="playingAll"
+      @cancel="confirmPlayAll = false"
+      @confirm="onConfirmPlayAll"
+    />
   </AppShell>
 </template>

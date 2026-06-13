@@ -22,7 +22,9 @@ const accentBar = computed<Record<Accent, string>>(() => ({
 </script>
 
 <template>
-  <div class="relative overflow-hidden rounded-2xl border border-white/5 bg-slate-900/50 p-4">
+  <div
+    class="relative overflow-hidden rounded-2xl border border-white/5 bg-slate-900/50 p-4 transition duration-200 hover:-translate-y-0.5 hover:border-white/10 hover:bg-slate-900/70"
+  >
     <span
       class="absolute inset-y-0 left-0 w-1"
       :class="accentBar[props.accent]"

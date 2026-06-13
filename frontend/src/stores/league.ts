@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import { ApiError } from '@/services/http'
 import { leagueApi } from '@/services/leagueApi'
+import { useToastStore } from '@/stores/toasts'
 import type { Prediction, Standing, Team, WeekFixtures } from '@/types/league'
 
 function toMessage(error: unknown): string {
@@ -23,7 +24,6 @@ export const useLeagueStore = defineStore('league', () => {
   const loading = ref(false)
   const activeAction = ref<string | null>(null)
   const error = ref<string | null>(null)
-  const notice = ref<string | null>(null)
 
   const allFixtures = computed(() => weeks.value.flatMap((week) => week.fixtures))
   const hasFixtures = computed(() => allFixtures.value.length > 0)
@@ -105,13 +105,13 @@ export const useLeagueStore = defineStore('league', () => {
     key: string,
     operation: () => Promise<{ message: string }>,
   ): Promise<void> {
+    const toasts = useToastStore()
     activeAction.value = key
     error.value = null
-    notice.value = null
 
     try {
       const result = await operation()
-      notice.value = result.message
+      toasts.push(result.message, 'success')
       await refresh()
     } catch (caught) {
       error.value = toMessage(caught)
@@ -130,10 +130,6 @@ export const useLeagueStore = defineStore('league', () => {
     error.value = null
   }
 
-  function dismissNotice(): void {
-    notice.value = null
-  }
-
   return {
     teams,
     weeks,
@@ -143,7 +139,6 @@ export const useLeagueStore = defineStore('league', () => {
     loading,
     activeAction,
     error,
-    notice,
     hasFixtures,
     totalFixtures,
     playedFixtures,
@@ -159,6 +154,5 @@ export const useLeagueStore = defineStore('league', () => {
     playNext,
     playAll,
     dismissError,
-    dismissNotice,
   }
 })
