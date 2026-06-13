@@ -71,8 +71,28 @@ npm run type-check
 npm run build
 ```
 
+## API
+
+The backend exposes the league simulation over JSON under `/api`:
+
+| Method | Path                     | Description                     |
+| ------ | ------------------------ | ------------------------------- |
+| GET    | `/api/teams`             | List teams                      |
+| GET    | `/api/fixtures`          | Fixtures grouped by week        |
+| GET    | `/api/standings`         | Current league table            |
+| POST   | `/api/fixtures/generate` | Generate the schedule           |
+| POST   | `/api/weeks/{week}/play` | Play a specific week            |
+| POST   | `/api/weeks/next/play`   | Play the earliest unplayed week |
+| POST   | `/api/league/play-all`   | Play all remaining fixtures     |
+| GET    | `/api/predictions`       | Championship chances            |
+
+A typical flow: seed teams (`php artisan migrate --seed`), `POST /api/fixtures/generate`,
+play weeks, then read `/api/standings` and `/api/predictions`. See [docs/api.md](docs/api.md)
+for status codes and example responses.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
 - [API](docs/api.md)
+- [Simulation engine](docs/simulation-engine.md)
 - [Smoke QA](docs/smoke-qa.md)
