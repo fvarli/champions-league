@@ -30,7 +30,7 @@ class ApiAccessLogTest extends TestCase
         $this->seed(TeamSeeder::class);
         $this->assertSame(0, ApiAccessLog::query()->count());
 
-        $this->getJson('/api/teams')->assertOk();
+        $this->getJson('/api/v1/teams')->assertOk();
 
         $this->assertSame(1, ApiAccessLog::query()->count());
     }
@@ -39,7 +39,7 @@ class ApiAccessLogTest extends TestCase
     {
         $this->seed(TeamSeeder::class);
 
-        $response = $this->getJson('/api/teams')->assertOk();
+        $response = $this->getJson('/api/v1/teams')->assertOk();
         $log = ApiAccessLog::query()->latest('id')->firstOrFail();
 
         $this->assertNotEmpty($log->request_id);
@@ -51,7 +51,7 @@ class ApiAccessLogTest extends TestCase
     {
         $this->seed(TeamSeeder::class);
 
-        $this->getJson('/api/teams', ['X-Request-Id' => 'corr-xyz'])->assertOk();
+        $this->getJson('/api/v1/teams', ['X-Request-Id' => 'corr-xyz'])->assertOk();
 
         $this->assertSame('corr-xyz', ApiAccessLog::query()->latest('id')->firstOrFail()->request_id);
     }
@@ -60,11 +60,11 @@ class ApiAccessLogTest extends TestCase
     {
         $this->seed(TeamSeeder::class);
 
-        $this->getJson('/api/teams', ['User-Agent' => 'PHPUnit-Agent'])->assertOk();
+        $this->getJson('/api/v1/teams', ['User-Agent' => 'PHPUnit-Agent'])->assertOk();
         $log = ApiAccessLog::query()->latest('id')->firstOrFail();
 
         $this->assertSame('GET', $log->method);
-        $this->assertSame('api/teams', $log->path);
+        $this->assertSame('api/v1/teams', $log->path);
         $this->assertSame(200, $log->status_code);
         $this->assertGreaterThanOrEqual(0.0, (float) $log->duration_ms);
         $this->assertNotNull($log->ip);
@@ -83,10 +83,10 @@ class ApiAccessLogTest extends TestCase
         $this->assertFalse(Schema::hasColumn('api_access_logs', 'request'));
 
         // A request that carries a body leaves only metadata behind.
-        $this->postJson('/api/fixtures/generate')->assertSuccessful();
+        $this->postJson('/api/v1/fixtures/generate')->assertSuccessful();
         $fixtureId = Fixture::query()->value('id');
 
-        $this->patchJson("/api/fixtures/{$fixtureId}/score", ['home_score' => 4, 'away_score' => 2])->assertOk();
+        $this->patchJson("/api/v1/fixtures/{$fixtureId}/score", ['home_score' => 4, 'away_score' => 2])->assertOk();
         $log = ApiAccessLog::query()->where('path', 'like', '%/score')->latest('id')->firstOrFail();
 
         $this->assertEqualsCanonicalizing(self::EXPECTED_COLUMNS, array_keys($log->getAttributes()));
@@ -97,7 +97,7 @@ class ApiAccessLogTest extends TestCase
         $this->seed(TeamSeeder::class);
 
         // The teams response body contains team names; none must leak into the log.
-        $response = $this->getJson('/api/teams')->assertOk();
+        $response = $this->getJson('/api/v1/teams')->assertOk();
         $teamName = $response->json('data.0.name');
         $this->assertNotEmpty($teamName);
 
@@ -114,13 +114,13 @@ class ApiAccessLogTest extends TestCase
         $this->seed(TeamSeeder::class);
 
         // A matched route with a missing model binding produces a JSON 404.
-        $this->patchJson('/api/fixtures/999999/score', ['home_score' => 1, 'away_score' => 0])
+        $this->patchJson('/api/v1/fixtures/999999/score', ['home_score' => 1, 'away_score' => 0])
             ->assertNotFound();
 
         $log = ApiAccessLog::query()->latest('id')->firstOrFail();
         $this->assertSame(404, $log->status_code);
         $this->assertSame('PATCH', $log->method);
-        $this->assertSame('api/fixtures/999999/score', $log->path);
+        $this->assertSame('api/v1/fixtures/999999/score', $log->path);
     }
 
     public function test_a_logging_failure_does_not_break_the_api_response(): void
@@ -131,7 +131,7 @@ class ApiAccessLogTest extends TestCase
         $throwing->method('log')->willThrowException(new RuntimeException('logging is down'));
         $this->app->instance(ApiAccessLogService::class, $throwing);
 
-        $this->getJson('/api/teams')
+        $this->getJson('/api/v1/teams')
             ->assertOk()
             ->assertJsonStructure(['data', 'request_id']);
     }

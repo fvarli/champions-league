@@ -101,22 +101,26 @@ stored.
 
 ## API
 
-All endpoints live under `/api` and return JSON. See [docs/api.md](docs/api.md) for
-full examples.
+All endpoints are versioned under `/api/v1` and return JSON. See
+[docs/api.md](docs/api.md) for full examples.
 
-| Method | Path                     | Description                          |
-| ------ | ------------------------ | ------------------------------------ |
-| GET    | `/api/health`            | Liveness/readiness probe (checks DB) |
-| GET    | `/api/teams`             | List teams                           |
-| GET    | `/api/fixtures`          | Fixtures grouped by week             |
-| GET    | `/api/standings`         | Current league table                 |
-| POST   | `/api/fixtures/generate` | Generate the schedule                |
-| PATCH  | `/api/fixtures/{id}/score` | Edit a fixture's score (0–20)      |
-| POST   | `/api/weeks/{week}/play` | Play a specific week                 |
-| POST   | `/api/weeks/next/play`   | Play the earliest unplayed week      |
-| POST   | `/api/league/play-all`   | Play all remaining fixtures          |
-| POST   | `/api/league/reset`      | Reset to seeded teams, clear fixtures|
-| GET    | `/api/predictions`       | Championship chances                 |
+| Method | Path                        | Description                          |
+| ------ | --------------------------- | ------------------------------------ |
+| GET    | `/api/v1/health`            | Liveness/readiness probe (checks DB) |
+| GET    | `/api/v1/teams`             | List teams                           |
+| GET    | `/api/v1/fixtures`          | Fixtures grouped by week             |
+| POST   | `/api/v1/fixtures/generate` | Generate the schedule                |
+| PATCH  | `/api/v1/fixtures/{id}/score` | Edit a fixture's score (0–20)      |
+| GET    | `/api/v1/standings`         | Current league table                 |
+| POST   | `/api/v1/weeks/{week}/play` | Play a specific week                 |
+| POST   | `/api/v1/weeks/next/play`   | Play the earliest unplayed week      |
+| POST   | `/api/v1/league/play-all`   | Play all remaining fixtures          |
+| POST   | `/api/v1/league/reset`      | Reset to seeded teams, clear fixtures|
+| GET    | `/api/v1/predictions`       | Championship chances                 |
+
+**Versioning** — every endpoint lives under `/api/v1`; future breaking changes ship as
+`/api/v2`, so existing clients keep working. Responses advertise the served version via
+an `X-API-Version` header.
 
 **Reliability** — every response carries an `X-Request-Id` header (and a matching
 `request_id` in the JSON body); a supplied `X-Request-Id` is reused for correlation.
@@ -125,7 +129,7 @@ to **60 requests per minute per IP** (`429` when exceeded).
 
 **Demo reset** — clear fixtures and restore the four seeded teams for a clean
 walkthrough. Use the dashboard's **Reset Season** button, the API
-(`POST /api/league/reset`), or the CLI:
+(`POST /api/v1/league/reset`), or the CLI:
 
 ```bash
 php artisan league:demo-reset

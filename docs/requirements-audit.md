@@ -11,9 +11,9 @@ evidence. Status is one of **Done** (required item implemented), **Extra**
 | Four teams | Done | `backend/database/seeders/TeamSeeder.php` seeds exactly Liverpool (90), Manchester City (88), Chelsea (82), Arsenal (80); `TeamSeederTest`. |
 | Strength-based match simulation (stronger usually wins, weaker still can) | Done | `MatchSimulationService::generateScore()` converts strength + home advantage into per-attempt scoring chance with injected randomness; `MatchSimulationServiceTest` asserts stronger teams win more often and a weaker team can still win. |
 | Premier League scoring (3/1/0, GD, GF, points) | Done | `TeamStanding::points()` = `won*3 + drawn`; `LeagueStandingsService` sorts by points → goal difference → goals for → name; `LeagueStandingsServiceTest`. |
-| Week-by-week simulation | Done | `PlayWeekAction` / `PlayNextWeekAction`; `POST /api/weeks/{week}/play`, `POST /api/weeks/next/play`; dashboard "Play Next Week" / "Play Week"; `PlayLeagueActionsTest`. |
-| League table updates after each week | Done | `LeagueStandingsService::calculate()` derives standings from played fixtures; `GET /api/standings`; the store refreshes standings after every action and `StandingsTable.vue` re-renders. |
-| Prediction after the 4th week / last weeks | Done | `ChampionshipPredictionService` (Monte Carlo) gated at `MIN_PLAYED_FIXTURES = 8` (after week 4) or league complete; `GET /api/predictions`; `ChampionshipPredictionServiceTest`; `PredictionPanel.vue` shows an "X / 8" unlock progress. See note below. |
+| Week-by-week simulation | Done | `PlayWeekAction` / `PlayNextWeekAction`; `POST /api/v1/weeks/{week}/play`, `POST /api/v1/weeks/next/play`; dashboard "Play Next Week" / "Play Week"; `PlayLeagueActionsTest`. |
+| League table updates after each week | Done | `LeagueStandingsService::calculate()` derives standings from played fixtures; `GET /api/v1/standings`; the store refreshes standings after every action and `StandingsTable.vue` re-renders. |
+| Prediction after the 4th week / last weeks | Done | `ChampionshipPredictionService` (Monte Carlo) gated at `MIN_PLAYED_FIXTURES = 8` (after week 4) or league complete; `GET /api/v1/predictions`; `ChampionshipPredictionServiceTest`; `PredictionPanel.vue` shows an "X / 8" unlock progress. See note below. |
 | PHP / Laravel backend | Done | Laravel 12 application under `backend/`. |
 | JavaScript front-end with a component design pattern (Vue) | Done | Vue 3 + TypeScript SPA; component-based UI under `frontend/src/components/` (AppShell, StandingsTable, FixtureWeekCard, PredictionPanel, ActionPanel, WeekPicker, …). |
 | OOP | Done | Service/action layering and value objects: `app/Services/*`, `app/Actions/*`, immutable `TeamStanding` / `MatchResult` / `ChampionChance`. |
@@ -24,9 +24,9 @@ evidence. Status is one of **Done** (required item implemented), **Extra**
 
 | Extra | Status | Evidence |
 | --- | --- | --- |
-| "Play All" — auto-play to the end and list results by week | Extra | `PlayAllRemainingFixturesAction` returns played fixtures grouped by week; `POST /api/league/play-all`; dashboard "Play All Remaining" with a confirmation modal. |
-| Match results listed by week | Extra | `GET /api/fixtures` returns fixtures grouped by week; `FixtureWeekCard.vue` renders each week with scores and played/pending badges. |
-| Edit match results and recalculate standings | Extra | `PATCH /api/fixtures/{fixture}/score` via `UpdateFixtureScoreAction` + `UpdateFixtureScoreRequest` (scores 0–5); editing an unplayed fixture marks it played, an edited fixture keeps its `played_at`. Standings and predictions recompute automatically. Dashboard: a per-fixture edit action opens `EditFixtureScoreModal.vue`. Tests in `EditFixtureScoreTest`. |
+| "Play All" — auto-play to the end and list results by week | Extra | `PlayAllRemainingFixturesAction` returns played fixtures grouped by week; `POST /api/v1/league/play-all`; dashboard "Play All Remaining" with a confirmation modal. |
+| Match results listed by week | Extra | `GET /api/v1/fixtures` returns fixtures grouped by week; `FixtureWeekCard.vue` renders each week with scores and played/pending badges. |
+| Edit match results and recalculate standings | Extra | `PATCH /api/v1/fixtures/{fixture}/score` via `UpdateFixtureScoreAction` + `UpdateFixtureScoreRequest` (scores 0–5); editing an unplayed fixture marks it played, an edited fixture keeps its `played_at`. Standings and predictions recompute automatically. Dashboard: a per-fixture edit action opens `EditFixtureScoreModal.vue`. Tests in `EditFixtureScoreTest`. |
 
 ## Notes
 

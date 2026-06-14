@@ -37,6 +37,35 @@ games. After each run the league table is recalculated and the champion recorded
 team's probability is the share of runs in which it finished first. Randomness is
 injected, so tests drive it with a seeded engine for deterministic results.
 
+## API versioning & request flow
+
+Every public endpoint is served under a version prefix (`/api/v1`). The current version
+is defined once in `App\Support\ApiVersion::CURRENT` and reused by the route prefix and
+the `X-API-Version` response header, so routing, headers, and docs cannot drift. A future
+breaking change is introduced as a parallel `/api/v2` group, leaving existing clients on
+`v1` untouched.
+
+A request flows through the middleware stack before reaching the domain layer:
+
+```
+Client
+   │
+   ▼
+/api/v1/*
+   │
+RequestIdMiddleware        → assigns/reuses X-Request-Id
+   │
+ApiAccessLogMiddleware     → persists a metadata-only access log
+   │
+SecurityHeadersMiddleware  → security headers + X-API-Version
+   │
+Controller
+   │
+Service layer
+   │
+PostgreSQL
+```
+
 ## API reliability
 
 A small set of middleware hardens the API without touching domain logic: a
@@ -44,8 +73,8 @@ request-id middleware adds an `X-Request-Id` correlation id (reused if supplied)
 and merges it into JSON bodies from one central place; a force-JSON middleware
 keeps `/api/*` responses JSON even for framework errors; and a security-headers
 middleware applies conservative headers. API routes are rate limited to 60
-requests/minute per IP. A `GET /api/health` endpoint checks database
-connectivity, and `POST /api/league/reset` (or `php artisan league:demo-reset`)
+requests/minute per IP. A `GET /api/v1/health` endpoint checks database
+connectivity, and `POST /api/v1/league/reset` (or `php artisan league:demo-reset`)
 restores a clean demo state.
 
 ## API observability

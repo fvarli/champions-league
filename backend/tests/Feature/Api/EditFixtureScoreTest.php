@@ -33,7 +33,7 @@ class EditFixtureScoreTest extends TestCase
     {
         $fixture = $this->fixture($this->team('Liverpool'), $this->team('Arsenal'));
 
-        $this->patchJson("/api/fixtures/{$fixture->id}/score", ['home_score' => 2, 'away_score' => 1])
+        $this->patchJson("/api/v1/fixtures/{$fixture->id}/score", ['home_score' => 2, 'away_score' => 1])
             ->assertOk()
             ->assertJsonPath('message', 'Fixture score updated.')
             ->assertJsonPath('data.fixture.home_score', 2)
@@ -51,7 +51,7 @@ class EditFixtureScoreTest extends TestCase
         $playedAt = now()->subDays(2)->startOfSecond();
         $fixture = $this->fixture($this->team('Liverpool'), $this->team('Arsenal'), 1, 1, $playedAt);
 
-        $this->patchJson("/api/fixtures/{$fixture->id}/score", ['home_score' => 3, 'away_score' => 0])
+        $this->patchJson("/api/v1/fixtures/{$fixture->id}/score", ['home_score' => 3, 'away_score' => 0])
             ->assertOk();
 
         $fresh = $fixture->fresh();
@@ -66,7 +66,7 @@ class EditFixtureScoreTest extends TestCase
         $away = $this->team('Away');
         $fixture = $this->fixture($home, $away, 1, 0, now());
 
-        $response = $this->patchJson("/api/fixtures/{$fixture->id}/score", ['home_score' => 0, 'away_score' => 2])
+        $response = $this->patchJson("/api/v1/fixtures/{$fixture->id}/score", ['home_score' => 0, 'away_score' => 2])
             ->assertOk();
 
         $standings = collect($response->json('data.standings'));
@@ -84,7 +84,7 @@ class EditFixtureScoreTest extends TestCase
         // The only fixture is played, so the league is "complete" — Alpha leads.
         $fixture = $this->fixture($alpha, $bravo, 3, 0, now());
 
-        $response = $this->patchJson("/api/fixtures/{$fixture->id}/score", ['home_score' => 0, 'away_score' => 3])
+        $response = $this->patchJson("/api/v1/fixtures/{$fixture->id}/score", ['home_score' => 0, 'away_score' => 3])
             ->assertOk();
 
         $predictions = collect($response->json('data.predictions'));
@@ -102,7 +102,7 @@ class EditFixtureScoreTest extends TestCase
         $played = collect(range(1, 8))->map(fn (): Fixture => $this->fixture($a, $b, 1, 0, now()));
         $this->fixture($a, $b); // one unplayed fixture remains
 
-        $response = $this->patchJson("/api/fixtures/{$played->first()->id}/score", ['home_score' => 2, 'away_score' => 2])
+        $response = $this->patchJson("/api/v1/fixtures/{$played->first()->id}/score", ['home_score' => 2, 'away_score' => 2])
             ->assertOk();
 
         $predictions = $response->json('data.predictions');
@@ -129,7 +129,7 @@ class EditFixtureScoreTest extends TestCase
     {
         $fixture = $this->fixture($this->team('Liverpool'), $this->team('Arsenal'));
 
-        $this->patchJson("/api/fixtures/{$fixture->id}/score", ['home_score' => $homeScore, 'away_score' => 1])
+        $this->patchJson("/api/v1/fixtures/{$fixture->id}/score", ['home_score' => $homeScore, 'away_score' => 1])
             ->assertStatus(422)
             ->assertJsonValidationErrors('home_score');
 
@@ -143,7 +143,7 @@ class EditFixtureScoreTest extends TestCase
         $target = $this->fixture($a, $b, 1, 0, now());
         $other = $this->fixture($b, $a, 2, 2, now()->subDay()->startOfSecond());
 
-        $this->patchJson("/api/fixtures/{$target->id}/score", ['home_score' => 4, 'away_score' => 1])
+        $this->patchJson("/api/v1/fixtures/{$target->id}/score", ['home_score' => 4, 'away_score' => 1])
             ->assertOk();
 
         $freshOther = $other->fresh();
@@ -156,7 +156,7 @@ class EditFixtureScoreTest extends TestCase
     {
         $fixture = $this->fixture($this->team('Liverpool'), $this->team('Arsenal'), 1, 1, now());
 
-        $this->patchJson("/api/fixtures/{$fixture->id}/score", ['home_score' => 2, 'away_score' => 0])
+        $this->patchJson("/api/v1/fixtures/{$fixture->id}/score", ['home_score' => 2, 'away_score' => 0])
             ->assertOk()
             ->assertJsonStructure(['message', 'data' => ['fixture', 'standings', 'predictions'], 'request_id']);
     }

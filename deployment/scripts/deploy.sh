@@ -62,7 +62,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 log "Health check"
-if curl -fsS -H "Accept: application/json" "https://${API_DOMAIN}/api/health" | grep -q '"status":"ok"'; then
+if curl -fsS -H "Accept: application/json" "https://${API_DOMAIN}/api/v1/health" | grep -q '"status":"ok"'; then
     log "Deploy complete and healthy ✓"
 else
     echo "Health check FAILED — investigate before serving traffic." >&2

@@ -19,7 +19,7 @@ docker compose up -d --build
 ## API health
 
 ```bash
-curl -i http://127.0.0.1:8000/api/health
+curl -i http://127.0.0.1:8000/api/v1/health
 ```
 
 - Returns `200` with `{"status":"ok","database":"ok",...}`.
@@ -44,7 +44,7 @@ On the dashboard, hover a fixture and use the edit (pencil) action, or call the 
 directly:
 
 ```bash
-curl -X PATCH http://127.0.0.1:8000/api/fixtures/1/score \
+curl -X PATCH http://127.0.0.1:8000/api/v1/fixtures/1/score \
   -H "Content-Type: application/json" \
   -d '{"home_score": 3, "away_score": 0}'
 ```
@@ -62,7 +62,7 @@ php artisan league:demo-reset
 ```
 
 - Clears all fixtures and keeps (or re-seeds) the four teams.
-- Safe to run repeatedly; the equivalent API call is `POST /api/league/reset`.
+- Safe to run repeatedly; the equivalent API call is `POST /api/v1/league/reset`.
 
 ## Quality gates
 

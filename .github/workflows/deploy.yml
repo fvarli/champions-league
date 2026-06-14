@@ -26,7 +26,7 @@ jobs:
           # --- Non-secret deploy configuration (repository variables, with defaults) ---
           APP_DIR: ${{ vars.PROD_APP_DIR || '/var/www/champions-league' }}
           BRANCH: ${{ vars.PROD_BRANCH || 'main' }}
-          API_HEALTH_URL: ${{ vars.PROD_API_HEALTH_URL || 'https://api.champions.ferzendervarli.com/api/health' }}
+          API_HEALTH_URL: ${{ vars.PROD_API_HEALTH_URL || 'https://api.champions.ferzendervarli.com/api/v1/health' }}
           PHP_FPM_SERVICE: ${{ vars.PROD_PHP_FPM_SERVICE || 'php8.3-fpm' }}
           WEB_USER: ${{ vars.PROD_WEB_USER || 'deploy' }}
           WEB_GROUP: ${{ vars.PROD_WEB_GROUP || 'www-data' }}

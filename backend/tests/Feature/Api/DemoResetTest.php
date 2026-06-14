@@ -24,7 +24,7 @@ class DemoResetTest extends TestCase
         $this->seedAndGenerate();
         $this->assertSame(12, Fixture::count());
 
-        $this->postJson('/api/league/reset')
+        $this->postJson('/api/v1/league/reset')
             ->assertOk()
             ->assertJsonStructure(['message', 'data' => ['teams', 'fixtures', 'standings']])
             ->assertJsonPath('data.fixtures', []);
@@ -37,7 +37,7 @@ class DemoResetTest extends TestCase
     {
         $this->seedAndGenerate();
 
-        $response = $this->postJson('/api/league/reset')->assertOk();
+        $response = $this->postJson('/api/v1/league/reset')->assertOk();
 
         $response->assertJsonCount(4, 'data.teams');
         $response->assertJsonCount(4, 'data.standings');
@@ -53,8 +53,8 @@ class DemoResetTest extends TestCase
     {
         $this->seedAndGenerate();
 
-        $this->postJson('/api/league/reset')->assertOk();
-        $this->postJson('/api/league/reset')->assertOk();
+        $this->postJson('/api/v1/league/reset')->assertOk();
+        $this->postJson('/api/v1/league/reset')->assertOk();
 
         $this->assertSame(0, Fixture::count());
         $this->assertSame(4, Team::count());
@@ -64,7 +64,7 @@ class DemoResetTest extends TestCase
     {
         $this->assertSame(0, Team::count());
 
-        $this->postJson('/api/league/reset')
+        $this->postJson('/api/v1/league/reset')
             ->assertOk()
             ->assertJsonCount(4, 'data.teams');
 

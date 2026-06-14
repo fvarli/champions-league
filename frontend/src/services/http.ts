@@ -36,11 +36,11 @@ function rateLimitMessage(response: Response): string {
 }
 
 /**
- * Thin JSON fetch wrapper for the backend API. Prefixes `/api`, sets JSON
- * headers, and normalises errors into {@link ApiError}.
+ * Thin JSON fetch wrapper for the backend API. Prefixes the versioned `/api/v1`
+ * base, sets JSON headers, and normalises errors into {@link ApiError}.
  */
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${baseUrl}/api${path}`, {
+  const response = await fetch(`${baseUrl}/api/v1${path}`, {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',

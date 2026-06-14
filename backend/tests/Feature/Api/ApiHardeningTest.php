@@ -14,7 +14,7 @@ class ApiHardeningTest extends TestCase
     {
         $this->seed(TeamSeeder::class);
 
-        $response = $this->getJson('/api/teams')->assertOk();
+        $response = $this->getJson('/api/v1/teams')->assertOk();
 
         $this->assertNotEmpty($response->headers->get('X-Request-Id'));
     }
@@ -23,7 +23,7 @@ class ApiHardeningTest extends TestCase
     {
         $this->seed(TeamSeeder::class);
 
-        $this->getJson('/api/teams')
+        $this->getJson('/api/v1/teams')
             ->assertOk()
             ->assertJsonStructure(['data', 'request_id']);
     }
@@ -32,7 +32,7 @@ class ApiHardeningTest extends TestCase
     {
         $this->seed(TeamSeeder::class);
 
-        $response = $this->getJson('/api/teams', ['X-Request-Id' => 'corr-123'])->assertOk();
+        $response = $this->getJson('/api/v1/teams', ['X-Request-Id' => 'corr-123'])->assertOk();
 
         $this->assertSame('corr-123', $response->headers->get('X-Request-Id'));
         $response->assertJsonPath('request_id', 'corr-123');
@@ -40,7 +40,7 @@ class ApiHardeningTest extends TestCase
 
     public function test_api_errors_are_returned_as_json_not_html(): void
     {
-        $response = $this->get('/api/does-not-exist', ['Accept' => 'text/html']);
+        $response = $this->get('/api/v1/does-not-exist', ['Accept' => 'text/html']);
 
         $response->assertStatus(404);
         $this->assertStringContainsString('application/json', (string) $response->headers->get('Content-Type'));
@@ -48,7 +48,7 @@ class ApiHardeningTest extends TestCase
 
     public function test_api_responses_include_security_headers(): void
     {
-        $response = $this->getJson('/api/health')->assertOk();
+        $response = $this->getJson('/api/v1/health')->assertOk();
 
         $response->assertHeader('X-Content-Type-Options', 'nosniff');
         $response->assertHeader('X-Frame-Options', 'DENY');
@@ -58,9 +58,16 @@ class ApiHardeningTest extends TestCase
         $response->assertHeader('Cross-Origin-Opener-Policy', 'same-origin');
     }
 
+    public function test_api_responses_advertise_the_api_version(): void
+    {
+        $this->getJson('/api/v1/health')
+            ->assertOk()
+            ->assertHeader('X-API-Version', 'v1');
+    }
+
     public function test_health_endpoint_reports_ok_with_request_id(): void
     {
-        $response = $this->getJson('/api/health')->assertOk();
+        $response = $this->getJson('/api/v1/health')->assertOk();
 
         $response->assertJsonPath('status', 'ok')->assertJsonPath('database', 'ok');
         $this->assertNotEmpty($response->json('request_id'));
@@ -71,7 +78,7 @@ class ApiHardeningTest extends TestCase
         $status = 200;
 
         for ($i = 0; $i < 70 && $status !== 429; $i++) {
-            $status = $this->getJson('/api/health')->getStatusCode();
+            $status = $this->getJson('/api/v1/health')->getStatusCode();
         }
 
         $this->assertSame(429, $status);

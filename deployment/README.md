@@ -68,7 +68,7 @@ npm run build
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Verify: `curl https://api.champions.ferzendervarli.com/api/health` returns `"status":"ok"`.
+Verify: `curl https://api.champions.ferzendervarli.com/api/v1/health` returns `"status":"ok"`.
 
 ## Nginx (two-domain)
 
@@ -151,7 +151,7 @@ fall back to sensible defaults in the workflow, so only the required ones are ma
 | --- | --- |
 | `PROD_APP_DIR` | `/var/www/champions-league` |
 | `PROD_BRANCH` | `main` |
-| `PROD_API_HEALTH_URL` | `https://api.champions.ferzendervarli.com/api/health` |
+| `PROD_API_HEALTH_URL` | `https://api.champions.ferzendervarli.com/api/v1/health` |
 | `PROD_PHP_FPM_SERVICE` | `php8.3-fpm` |
 | `PROD_WEB_USER` | `deploy` |
 | `PROD_WEB_GROUP` | `www-data` |

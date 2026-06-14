@@ -1,9 +1,15 @@
 # API
 
+> **API Versioning**
+>
+> All public endpoints are exposed under `/api/v1`. Future breaking changes will be
+> introduced under `/api/v2`, preserving backward compatibility for existing clients.
+> Every response also carries an `X-API-Version` header advertising the served version.
+
 ## Conventions
 
 - Base URL (local): `http://127.0.0.1:8000`
-- All endpoints live under `/api` and return JSON.
+- All endpoints are versioned under `/api/v1` and return JSON.
 - Reads return `{ "data": ... }`. Actions return `{ "message": ..., "data": ... }`.
 - No authentication is required.
 
@@ -19,6 +25,7 @@
 - **Forced JSON** — `/api/*` always responds with JSON, even for framework errors.
 - **Security headers** — responses set `X-Content-Type-Options`, `X-Frame-Options`,
   `Referrer-Policy`, `Permissions-Policy`, and the `Cross-Origin-*-Policy` headers.
+- **API version** — every response carries an `X-API-Version` header (`v1`).
 - **Rate limiting** — 60 requests per minute per IP. Exceeding it returns `429`.
 
 ## Status codes
@@ -36,23 +43,23 @@ Errors return `{ "message": "..." }`.
 
 ## Endpoints
 
-| Method | Path                     | Description                            |
-| ------ | ------------------------ | -------------------------------------- |
-| GET    | `/api/health`            | Liveness/readiness probe (checks DB)   |
-| GET    | `/api/teams`             | List teams                             |
-| GET    | `/api/fixtures`          | List fixtures grouped by week          |
-| GET    | `/api/standings`         | Current league table                   |
-| POST   | `/api/fixtures/generate` | Generate the full schedule (12 matches)|
-| PATCH  | `/api/fixtures/{fixture}/score` | Edit a fixture's score          |
-| POST   | `/api/weeks/{week}/play` | Play a specific week                   |
-| POST   | `/api/weeks/next/play`   | Play the earliest unplayed week        |
-| POST   | `/api/league/play-all`   | Play all remaining fixtures            |
-| POST   | `/api/league/reset`      | Reset to seeded teams, clear fixtures  |
-| GET    | `/api/predictions`       | Championship chances (after 8 played)  |
+| Method | Path                        | Description                            |
+| ------ | --------------------------- | -------------------------------------- |
+| GET    | `/api/v1/health`            | Liveness/readiness probe (checks DB)   |
+| GET    | `/api/v1/teams`             | List teams                             |
+| GET    | `/api/v1/fixtures`          | List fixtures grouped by week          |
+| GET    | `/api/v1/standings`         | Current league table                   |
+| POST   | `/api/v1/fixtures/generate` | Generate the full schedule (12 matches)|
+| PATCH  | `/api/v1/fixtures/{fixture}/score` | Edit a fixture's score          |
+| POST   | `/api/v1/weeks/{week}/play` | Play a specific week                   |
+| POST   | `/api/v1/weeks/next/play`   | Play the earliest unplayed week        |
+| POST   | `/api/v1/league/play-all`   | Play all remaining fixtures            |
+| POST   | `/api/v1/league/reset`      | Reset to seeded teams, clear fixtures  |
+| GET    | `/api/v1/predictions`       | Championship chances (after 8 played)  |
 
 ## Example responses
 
-`GET /api/standings`
+`GET /api/v1/standings`
 
 ```json
 {
@@ -66,7 +73,7 @@ Errors return `{ "message": "..." }`.
 }
 ```
 
-`GET /api/fixtures` (grouped by week)
+`GET /api/v1/fixtures` (grouped by week)
 
 ```json
 {
@@ -84,19 +91,19 @@ Errors return `{ "message": "..." }`.
 }
 ```
 
-`POST /api/weeks/1/play`
+`POST /api/v1/weeks/1/play`
 
 ```json
 { "message": "Week 1 played.", "data": [ { "id": 1, "week": 1, "is_played": true } ] }
 ```
 
-`GET /api/predictions`
+`GET /api/v1/predictions`
 
 ```json
 { "data": [ { "team": { "id": 1, "name": "Liverpool", "strength": 90 }, "percentage": 62.5 } ] }
 ```
 
-`GET /api/health`
+`GET /api/v1/health`
 
 ```json
 {
@@ -111,7 +118,7 @@ Errors return `{ "message": "..." }`.
 If the database is unreachable, it returns `503` with
 `{ "status": "error", "database": "unavailable", "message": "...", "request_id": "..." }`.
 
-`POST /api/league/reset`
+`POST /api/v1/league/reset`
 
 ```json
 {
@@ -120,7 +127,7 @@ If the database is unreachable, it returns `503` with
 }
 ```
 
-`PATCH /api/fixtures/{fixture}/score`
+`PATCH /api/v1/fixtures/{fixture}/score`
 
 Body: `{ "home_score": 7, "away_score": 0 }` — each score must be an integer between 0 and
 20; invalid input returns `422`. Editing an unplayed fixture marks it played; an already

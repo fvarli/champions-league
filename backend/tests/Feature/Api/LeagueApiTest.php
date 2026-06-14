@@ -35,7 +35,7 @@ class LeagueApiTest extends TestCase
 
     public function test_get_teams_returns_the_seeded_teams(): void
     {
-        $this->getJson('/api/teams')
+        $this->getJson('/api/v1/teams')
             ->assertOk()
             ->assertJsonCount(4, 'data')
             ->assertJsonStructure(['data' => [['id', 'name', 'strength']]])
@@ -46,7 +46,7 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $response = $this->getJson('/api/fixtures')->assertOk();
+        $response = $this->getJson('/api/v1/fixtures')->assertOk();
 
         $this->assertCount(6, $response->json('data'));
         $this->assertCount(2, $response->json('data.1'));
@@ -58,7 +58,7 @@ class LeagueApiTest extends TestCase
 
     public function test_generate_creates_twelve_fixtures(): void
     {
-        $this->postJson('/api/fixtures/generate')
+        $this->postJson('/api/v1/fixtures/generate')
             ->assertCreated()
             ->assertJsonCount(12, 'data');
 
@@ -69,7 +69,7 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $this->postJson('/api/fixtures/generate')
+        $this->postJson('/api/v1/fixtures/generate')
             ->assertStatus(409)
             ->assertJsonStructure(['message']);
     }
@@ -78,7 +78,7 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $this->getJson('/api/standings')
+        $this->getJson('/api/v1/standings')
             ->assertOk()
             ->assertJsonCount(4, 'data')
             ->assertJsonStructure([
@@ -94,7 +94,7 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $this->postJson('/api/weeks/1/play')
+        $this->postJson('/api/v1/weeks/1/play')
             ->assertOk()
             ->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.is_played', true)
@@ -107,9 +107,9 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $this->postJson('/api/weeks/3/play')->assertOk();
+        $this->postJson('/api/v1/weeks/3/play')->assertOk();
 
-        $this->postJson('/api/weeks/next/play')
+        $this->postJson('/api/v1/weeks/next/play')
             ->assertOk()
             ->assertJsonPath('data.0.week', 1)
             ->assertJsonPath('data.1.week', 1);
@@ -119,7 +119,7 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $response = $this->postJson('/api/league/play-all')->assertOk();
+        $response = $this->postJson('/api/v1/league/play-all')->assertOk();
 
         $this->assertCount(6, $response->json('data'));
         $this->assertSame(0, Fixture::query()->whereNull('played_at')->count());
@@ -129,7 +129,7 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $this->getJson('/api/predictions')
+        $this->getJson('/api/v1/predictions')
             ->assertStatus(422)
             ->assertJsonStructure(['message']);
     }
@@ -139,10 +139,10 @@ class LeagueApiTest extends TestCase
         $this->generateFixtures();
 
         for ($week = 1; $week <= 4; $week++) {
-            $this->postJson("/api/weeks/{$week}/play")->assertOk();
+            $this->postJson("/api/v1/weeks/{$week}/play")->assertOk();
         }
 
-        $this->getJson('/api/predictions')
+        $this->getJson('/api/v1/predictions')
             ->assertOk()
             ->assertJsonCount(4, 'data')
             ->assertJsonStructure(['data' => [['team' => ['id', 'name'], 'percentage']]]);
@@ -152,22 +152,22 @@ class LeagueApiTest extends TestCase
     {
         $this->generateFixtures();
 
-        $this->postJson('/api/weeks/99/play')->assertStatus(422);
+        $this->postJson('/api/v1/weeks/99/play')->assertStatus(422);
     }
 
     public function test_replaying_a_completed_week_returns_409(): void
     {
         $this->generateFixtures();
-        $this->postJson('/api/weeks/1/play')->assertOk();
+        $this->postJson('/api/v1/weeks/1/play')->assertOk();
 
-        $this->postJson('/api/weeks/1/play')->assertStatus(409);
+        $this->postJson('/api/v1/weeks/1/play')->assertStatus(409);
     }
 
     public function test_playing_all_when_complete_returns_409(): void
     {
         $this->generateFixtures();
-        $this->postJson('/api/league/play-all')->assertOk();
+        $this->postJson('/api/v1/league/play-all')->assertOk();
 
-        $this->postJson('/api/league/play-all')->assertStatus(409);
+        $this->postJson('/api/v1/league/play-all')->assertStatus(409);
     }
 }
