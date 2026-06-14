@@ -13,13 +13,10 @@ Cloudflare (proxy, TLS, cache)
                                                  PostgreSQL (native)
 ```
 
-Because the SPA and API are on **different origins**, the API allows the frontend origin
-via CORS — `config/cors.php` reads the comma-separated `FRONTEND_URLS` env var. There is
-no queue worker (the app uses the `sync` queue), so no `systemd` service is required.
-
-> A single-domain layout (`/` + `/api` on one host) is also possible — see the committed
-> [`nginx/champions-league.conf`](nginx/champions-league.conf), which serves both from one
-> server block and needs no CORS.
+Because the SPA and API are on **different origins**, CORS is **required** in production:
+the API allows the frontend origin via `config/cors.php`, which reads the comma-separated
+**`FRONTEND_URLS`** env var (it must include `https://champions.ferzendervarli.com`). There
+is no queue worker (the app uses the `sync` queue), so no `systemd` service is required.
 
 ## Prerequisites
 
@@ -144,3 +141,10 @@ Rollback reverts **code only** — database migrations are not undone automatica
 
 Create a `systemd` unit running `php artisan queue:work` and switch `QUEUE_CONNECTION`
 away from `sync`. Not needed today.
+
+## Alternative: single-domain setup
+
+Not the production path, but supported: serve the SPA at `/` and the API at `/api` from a
+single host/server block (no CORS needed since they share an origin). The committed
+[`nginx/champions-league.conf`](nginx/champions-league.conf) is a ready-made example, and
+`frontend/.env` would then point `VITE_API_URL` at that same origin.

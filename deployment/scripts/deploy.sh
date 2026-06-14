@@ -3,15 +3,19 @@
 # Deploy Champions League Simulation on a native VPS (no Docker).
 # Run as the deploy user; service reloads use sudo.
 #
+# Production is two-domain:
+#   frontend  -> https://champions.ferzendervarli.com      (Vue dist)
+#   API       -> https://api.champions.ferzendervarli.com  (Laravel/PHP-FPM)
+#
 #   ./deploy.sh
 #
-# Override defaults via env vars, e.g. APP_DIR=/srv/app DOMAIN=example.com ./deploy.sh
+# Override defaults via env vars, e.g. APP_DIR=/srv/app API_DOMAIN=api.example.com ./deploy.sh
 
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/var/www/champions-league}"
 BRANCH="${BRANCH:-main}"
-DOMAIN="${DOMAIN:-champions.ferzendervarli.com}"
+API_DOMAIN="${API_DOMAIN:-api.champions.ferzendervarli.com}"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-php8.3-fpm}"
 
 log() { printf '\n\033[1;32m==>\033[0m %s\n' "$1"; }
@@ -29,13 +33,15 @@ log "Installing backend dependencies"
 cd "$APP_DIR/backend"
 composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-log "Running database migrations"
+log "Clearing stale caches and running migrations"
+php artisan optimize:clear
 php artisan migrate --force
 
 log "Rebuilding Laravel caches"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan event:cache
 
 log "Building frontend"
 cd "$APP_DIR/frontend"
@@ -49,7 +55,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 log "Health check"
-if curl -fsS "https://${DOMAIN}/api/health" | grep -q '"status":"ok"'; then
+if curl -fsS -H "Accept: application/json" "https://${API_DOMAIN}/api/health" | grep -q '"status":"ok"'; then
     log "Deploy complete and healthy ✓"
 else
     echo "Health check FAILED — investigate before serving traffic." >&2

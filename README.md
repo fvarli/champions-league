@@ -216,7 +216,8 @@ Pushing to `main` runs [CI](.github/workflows/ci.yml); on success the
 
 **Cloudflare checklist:** `A` records for `champions` and `api.champions` · SSL **Full
 (strict)** · **Always Use HTTPS** · **HTTP/3** · **Brotli** · cache hashed `/assets/*`
-(immutable), `index.html` `no-cache`.
+(immutable), `index.html` `no-cache`. If proxying the `api.champions` record causes SSL
+handshake issues, setting it to **DNS-only** (grey cloud) is acceptable.
 
 ---
 

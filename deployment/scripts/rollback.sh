@@ -11,7 +11,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/var/www/champions-league}"
-DOMAIN="${DOMAIN:-champions.ferzendervarli.com}"
+API_DOMAIN="${API_DOMAIN:-api.champions.ferzendervarli.com}"
 PHP_FPM_SERVICE="${PHP_FPM_SERVICE:-php8.3-fpm}"
 TARGET="${1:-HEAD~1}"
 
@@ -31,10 +31,12 @@ composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 echo "WARNING: database migrations are not rolled back automatically." >&2
 echo "         If needed, run a targeted 'php artisan migrate:rollback' manually." >&2
 
-log "Rebuilding Laravel caches"
+log "Clearing stale caches and rebuilding them"
+php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan event:cache
 
 log "Rebuilding frontend"
 cd "$APP_DIR/frontend"
@@ -47,7 +49,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 log "Health check"
-if curl -fsS "https://${DOMAIN}/api/health" | grep -q '"status":"ok"'; then
+if curl -fsS -H "Accept: application/json" "https://${API_DOMAIN}/api/health" | grep -q '"status":"ok"'; then
     log "Rollback complete and healthy ✓"
 else
     echo "Health check FAILED after rollback — investigate immediately." >&2
