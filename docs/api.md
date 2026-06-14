@@ -12,6 +12,10 @@
 - **Request id** — every response carries an `X-Request-Id` header, and JSON
   bodies include a matching `request_id`. Send your own `X-Request-Id` to have it
   reused for correlation.
+- **Access logs** — each `/api/*` request is recorded in the `api_access_logs`
+  table (method, path, route, status, duration, IP, user agent). Look up a row by
+  its `request_id` to trace a specific request. Only metadata is stored — **no
+  request or response payloads are logged**.
 - **Forced JSON** — `/api/*` always responds with JSON, even for framework errors.
 - **Security headers** — responses set `X-Content-Type-Options`, `X-Frame-Options`,
   `Referrer-Policy`, `Permissions-Policy`, and the `Cross-Origin-*-Policy` headers.

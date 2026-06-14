@@ -29,6 +29,7 @@
 - **Prediction engine** — estimates each team's championship probability from the 4th week onward.
 - **Editable results** — edit any fixture's score; standings and predictions recalculate automatically.
 - **REST API** — clean JSON endpoints with meaningful status codes.
+- **Request-id observability** — production-safe API access logs correlate every request by `X-Request-Id` (no payloads stored).
 - **Vue dashboard** — responsive, dark, premium analytics UI with toasts, skeletons, and transitions.
 - **Installable PWA** — web manifest, icons, and a custom favicon; add it to your home screen.
 - **Laravel backend** — service/action layered architecture, covered by automated tests.

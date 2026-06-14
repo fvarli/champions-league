@@ -48,6 +48,22 @@ requests/minute per IP. A `GET /api/health` endpoint checks database
 connectivity, and `POST /api/league/reset` (or `php artisan league:demo-reset`)
 restores a clean demo state.
 
+## API observability
+
+Every API response carries an `X-Request-Id` correlation id (see *API reliability*
+above). To make that id useful after the fact, an `ApiAccessLogMiddleware` persists a
+lightweight row per `/api/*` request into the `api_access_logs` table via
+`ApiAccessLogService`: the `request_id`, HTTP method, path (no query string), route
+name, status code, duration, client IP, and user agent. The same `request_id` returned
+in the response can later be searched in that table, so a production incident or demo
+issue can be traced end to end.
+
+This is **observability, not analytics**: no request body, no response body, and no
+other payload is ever stored — only request metadata. Logging is best-effort and
+self-contained; a persistence failure is caught and reported, never surfaced to the
+caller, so it cannot break an API response. Error responses (e.g. a `404`) are logged
+too. Retention is unbounded for now; a scheduled prune can be added if traffic grows.
+
 ## Frontend structure
 
 ```

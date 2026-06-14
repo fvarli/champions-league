@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\Contracts\ProvidesHttpStatus;
+use App\Http\Middleware\ApiAccessLogMiddleware;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\RequestIdMiddleware;
 use App\Http\Middleware\SecurityHeadersMiddleware;
@@ -26,6 +27,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Rate limit the API: 60 requests per minute per IP (see AppServiceProvider).
         $middleware->appendToGroup('api', 'throttle:api');
+
+        // Persist a lightweight access log for every API request. Prepended to the
+        // group so it runs after the global RequestIdMiddleware (request_id is
+        // available) yet wraps routing/throttling — it observes the final response,
+        // including model-binding 404s and rate-limit 429s.
+        $middleware->prependToGroup('api', ApiAccessLogMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (ProvidesHttpStatus $e, Request $request) {

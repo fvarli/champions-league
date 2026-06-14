@@ -159,6 +159,22 @@ fall back to sensible defaults in the workflow, so only the required ones are ma
 The workflow writes these into the remote shell and renders the `.env` files there;
 secret values are never echoed to the logs.
 
+## Inspecting API access logs
+
+Every `/api/*` request is recorded in the **`api_access_logs`** table in PostgreSQL —
+method, path, route, status, duration, IP, and user agent, but **no request/response
+payloads**. To trace a request from an `X-Request-Id` returned to a client:
+
+```bash
+sudo -u postgres psql champions_league \
+  -c "SELECT created_at, method, path, status_code, duration_ms \
+      FROM api_access_logs WHERE request_id = '<id>' ORDER BY created_at;"
+```
+
+The table has no automatic retention today; if traffic grows, a scheduled prune (e.g. a
+daily `DELETE FROM api_access_logs WHERE created_at < now() - interval '30 days'`) can be
+added later.
+
 ## Rolling back
 
 ```bash
