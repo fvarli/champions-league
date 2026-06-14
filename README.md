@@ -6,6 +6,10 @@
 
 [**▶ Watch the demo**](#demo) · [Features](#features) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Local setup](#local-setup)
 
+<p align="center">
+  <img src="docs/social-preview.png" alt="Champions League Simulation" width="820" />
+</p>
+
 ---
 
 ## Features
@@ -17,6 +21,7 @@
 - **Monte Carlo championship prediction** — thousands of simulated seasons estimate each team's title chance.
 - **REST API** — clean JSON endpoints with meaningful status codes.
 - **Vue dashboard** — responsive, dark, premium analytics UI with toasts, skeletons, and transitions.
+- **Installable PWA** — web manifest, icons, and a custom favicon; add it to your home screen.
 - **Laravel backend** — service/action layered architecture with full test coverage.
 
 ---
