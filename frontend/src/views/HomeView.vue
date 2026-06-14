@@ -27,6 +27,14 @@ async function onConfirmPlayAll(): Promise<void> {
   confirmPlayAll.value = false
 }
 
+const confirmReset = ref(false)
+const resetting = computed(() => store.activeAction === 'reset')
+
+async function onConfirmReset(): Promise<void> {
+  await store.reset()
+  confirmReset.value = false
+}
+
 const statusLabel = computed(() => {
   if (!store.hasFixtures) {
     return 'Not started'
@@ -90,6 +98,7 @@ const statusLabel = computed(() => {
           @play-week="store.playWeek"
           @play-next="store.playNext"
           @play-all="confirmPlayAll = true"
+          @reset="confirmReset = true"
         />
 
         <div class="grid gap-6 lg:grid-cols-3">
@@ -136,6 +145,17 @@ const statusLabel = computed(() => {
       :busy="playingAll"
       @cancel="confirmPlayAll = false"
       @confirm="onConfirmPlayAll"
+    />
+
+    <ConfirmModal
+      :open="confirmReset"
+      title="Reset the season?"
+      message="This clears all fixtures and standings and keeps the four teams, giving you a clean slate."
+      confirm-label="Reset Season"
+      variant="danger"
+      :busy="resetting"
+      @cancel="confirmReset = false"
+      @confirm="onConfirmReset"
     />
   </AppShell>
 </template>

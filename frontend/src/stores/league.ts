@@ -90,11 +90,13 @@ export const useLeagueStore = defineStore('league', () => {
   }
 
   async function refresh(): Promise<void> {
-    const [loadedWeeks, loadedStandings] = await Promise.all([
+    const [loadedTeams, loadedWeeks, loadedStandings] = await Promise.all([
+      leagueApi.getTeams(),
       leagueApi.getFixtures(),
       leagueApi.getStandings(),
     ])
 
+    teams.value = loadedTeams
     weeks.value = loadedWeeks
     standings.value = loadedStandings
 
@@ -125,6 +127,7 @@ export const useLeagueStore = defineStore('league', () => {
     runAction('week', () => leagueApi.playWeek(week))
   const playNext = (): Promise<void> => runAction('next', () => leagueApi.playNext())
   const playAll = (): Promise<void> => runAction('all', () => leagueApi.playAll())
+  const reset = (): Promise<void> => runAction('reset', () => leagueApi.reset())
 
   function dismissError(): void {
     error.value = null
@@ -153,6 +156,7 @@ export const useLeagueStore = defineStore('league', () => {
     playWeek,
     playNext,
     playAll,
+    reset,
     dismissError,
   }
 })

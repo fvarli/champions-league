@@ -100,7 +100,8 @@ full examples.
 to **60 requests per minute per IP** (`429` when exceeded).
 
 **Demo reset** — clear fixtures and restore the four seeded teams for a clean
-walkthrough, via the API (`POST /api/league/reset`) or the CLI:
+walkthrough. Use the dashboard's **Reset Season** button, the API
+(`POST /api/league/reset`), or the CLI:
 
 ```bash
 php artisan league:demo-reset

@@ -39,4 +39,12 @@ export const leagueApi = {
 
   playAll: (): Promise<ActionResponse<Record<string, Fixture[]>>> =>
     request<ActionResponse<Record<string, Fixture[]>>>('/league/play-all', { method: 'POST' }),
+
+  reset: (): Promise<
+    ActionResponse<{ teams: Team[]; fixtures: Fixture[]; standings: Standing[] }>
+  > =>
+    request<ActionResponse<{ teams: Team[]; fixtures: Fixture[]; standings: Standing[] }>>(
+      '/league/reset',
+      { method: 'POST' },
+    ),
 }

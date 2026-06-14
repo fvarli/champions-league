@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import SpinnerIcon from '@/components/SpinnerIcon.vue'
 
@@ -10,11 +10,18 @@ const props = withDefaults(
     message?: string
     confirmLabel?: string
     busy?: boolean
+    variant?: 'primary' | 'danger'
   }>(),
-  { confirmLabel: 'Confirm', busy: false },
+  { confirmLabel: 'Confirm', busy: false, variant: 'primary' },
 )
 
 const emit = defineEmits<{ confirm: []; cancel: [] }>()
+
+const confirmClass = computed(() =>
+  props.variant === 'danger'
+    ? 'bg-rose-500 text-white hover:bg-rose-400'
+    : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400',
+)
 
 const panel = ref<HTMLElement | null>(null)
 
@@ -69,7 +76,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
             </button>
             <button
               type="button"
-              class="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+              class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              :class="confirmClass"
               :disabled="busy"
               @click="emit('confirm')"
             >
