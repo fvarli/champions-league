@@ -12,7 +12,7 @@
 > match engine, live standings, and a championship prediction engine — served by a
 > Laravel REST API and a polished Vue 3 dashboard.
 
-[**▶ Watch the demo**](#demo) · [Features](#features) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Local setup](#local-setup)
+**[🟢 Live demo](https://champions.ferzendervarli.com)** · [▶ Watch the clip](#demo) · [Features](#features) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Local setup](#local-setup)
 
 <p align="center">
   <img src="docs/social-preview.png" alt="Champions League Simulation" width="820" />
@@ -194,10 +194,15 @@ The dashboard runs at `http://localhost:5173` and calls the API at
 ## Deployment
 
 Production runs as a classic **native VPS** stack — **no Docker required**:
-**Cloudflare → Nginx → (Vue static + Laravel PHP-FPM 8.3) → native PostgreSQL**, on one
-host and one domain (the SPA and API share an origin, so no CORS in production).
+**Cloudflare → Nginx → (Vue static + Laravel PHP-FPM 8.3) → native PostgreSQL**, across two
+domains:
 
-The full runbook, Nginx config, and scripts live in [`deployment/`](deployment/README.md).
+- **Frontend** — <https://champions.ferzendervarli.com>
+- **API** — <https://api.champions.ferzendervarli.com>
+
+Because the SPA and API are on different origins, the API allows the frontend via CORS
+(`FRONTEND_URLS`). The full runbook, Nginx config, and scripts live in
+[`deployment/`](deployment/README.md).
 
 ```bash
 # on the server, from /var/www/champions-league
@@ -205,8 +210,13 @@ deployment/scripts/deploy.sh           # pull, build, migrate, cache, reload, he
 deployment/scripts/rollback.sh         # revert to the previous commit
 ```
 
-**Cloudflare checklist:** proxied `A` record · SSL **Full (strict)** · **Always Use HTTPS**
-· **HTTP/3** · **Brotli** · cache hashed `/assets/*` (immutable), `index.html` `no-cache`.
+Pushing to `main` runs [CI](.github/workflows/ci.yml); on success the
+[deploy workflow](.github/workflows/deploy.yml) ships over SSH. It requires repository
+**secrets**: `PROD_HOST`, `PROD_USER`, `PROD_SSH_KEY`, and (optional) `PROD_SSH_PORT`.
+
+**Cloudflare checklist:** `A` records for `champions` and `api.champions` · SSL **Full
+(strict)** · **Always Use HTTPS** · **HTTP/3** · **Brotli** · cache hashed `/assets/*`
+(immutable), `index.html` `no-cache`.
 
 ---
 

@@ -1,21 +1,25 @@
 # Native VPS Deployment
 
 A classic, Docker-free production setup: **Cloudflare → Nginx → (Vue static + Laravel
-PHP-FPM) → native PostgreSQL**, all on one host and one domain.
+PHP-FPM) → native PostgreSQL**, on one host across **two domains**.
 
 ```
 Cloudflare (proxy, TLS, cache)
         │
-      Nginx ──────────────┬────────────────────────────
-        │ /               │ /api
-   Vue dist (static)   Laravel public/ via PHP-FPM 8.3
-                              │
-                        PostgreSQL (native)
+      Nginx
+        ├── champions.ferzendervarli.com      → Vue dist (static)
+        └── api.champions.ferzendervarli.com  → Laravel public/ via PHP-FPM 8.3
+                                                       │
+                                                 PostgreSQL (native)
 ```
 
-The SPA and API share a single origin (`champions.ferzendervarli.com`), so **no CORS is
-needed in production**. There is no queue worker (the app uses the `sync` queue), so no
-`systemd` service is required.
+Because the SPA and API are on **different origins**, the API allows the frontend origin
+via CORS — `config/cors.php` reads the comma-separated `FRONTEND_URLS` env var. There is
+no queue worker (the app uses the `sync` queue), so no `systemd` service is required.
+
+> A single-domain layout (`/` + `/api` on one host) is also possible — see the committed
+> [`nginx/champions-league.conf`](nginx/champions-league.conf), which serves both from one
+> server block and needs no CORS.
 
 ## Prerequisites
 
@@ -26,7 +30,7 @@ Ubuntu/Debian VPS with:
 - Composer
 - Node 22 + npm
 - PostgreSQL 16
-- A domain proxied by Cloudflare
+- Two domains (or subdomains) pointed at the VPS via Cloudflare
 
 ## Directory layout
 
@@ -55,35 +59,64 @@ cp .env.production.example .env        # then edit secrets (DB_PASSWORD, etc.)
 php artisan key:generate
 php artisan migrate --force --seed     # seed once to create the four teams
 php artisan config:cache && php artisan route:cache && php artisan view:cache
-# Writable dirs for the web server
 sudo chown -R www-data:www-data storage bootstrap/cache
 
-# 4. Frontend
+# 4. Frontend (VITE_API_URL = the API subdomain, no /api suffix)
 cd ../frontend
-cp .env.production.example .env        # VITE_API_URL = site origin (no /api)
+cp .env.production.example .env
 npm ci
 npm run build
 
-# 5. Nginx + TLS
-sudo cp ../deployment/nginx/champions-league.conf /etc/nginx/sites-available/
-sudo ln -s /etc/nginx/sites-available/champions-league.conf /etc/nginx/sites-enabled/
-# Install a Cloudflare Origin Certificate at the paths in the conf, then:
+# 5. Nginx + TLS (two server blocks — see below), then:
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Verify: `curl https://champions.ferzendervarli.com/api/health` returns `"status":"ok"`.
+Verify: `curl https://api.champions.ferzendervarli.com/api/health` returns `"status":"ok"`.
+
+## Nginx (two-domain)
+
+Two server blocks behind the HTTP→HTTPS redirect, each with a Cloudflare Origin
+Certificate:
+
+```nginx
+# Frontend — champions.ferzendervarli.com
+server {
+    listen 443 ssl;
+    server_name champions.ferzendervarli.com;
+    root /var/www/champions-league/frontend/dist;
+    index index.html;
+    location / { try_files $uri $uri/ /index.html; }
+    location /assets/ { expires 1y; add_header Cache-Control "public, immutable"; }
+    location = /index.html { add_header Cache-Control "no-cache, no-store, must-revalidate"; }
+}
+
+# API — api.champions.ferzendervarli.com
+server {
+    listen 443 ssl;
+    server_name api.champions.ferzendervarli.com;
+    root /var/www/champions-league/backend/public;
+    index index.php;
+    location / { try_files $uri /index.php?$query_string; }
+    location ~ ^/index\.php(/|$) {
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_hide_header X-Powered-By;
+    }
+}
+```
+
+(Copy the TLS/security/gzip directives from `nginx/champions-league.conf`.)
 
 ## Deploying updates
 
-From `/var/www/champions-league`:
+**Automated (CI/CD):** pushing to `main` runs [CI](../.github/workflows/ci.yml); on success
+the [deploy workflow](../.github/workflows/deploy.yml) SSHes in and runs the steps below. It
+needs repository secrets `PROD_HOST`, `PROD_USER`, `PROD_SSH_KEY`, and optionally
+`PROD_SSH_PORT`.
 
-```bash
-deployment/scripts/deploy.sh
-```
-
-It pulls `main`, installs prod deps, migrates, rebuilds Laravel caches, rebuilds the
-frontend, reloads PHP-FPM + Nginx, and runs a health check. Override defaults with env
-vars (`APP_DIR`, `BRANCH`, `DOMAIN`, `PHP_FPM_SERVICE`).
+**Manual:** from `/var/www/champions-league`, `deployment/scripts/deploy.sh` performs the
+same pull → install → migrate → cache → build → reload → health-check flow.
 
 ## Rolling back
 
@@ -96,19 +129,16 @@ Rollback reverts **code only** — database migrations are not undone automatica
 
 ## Cloudflare DNS & settings checklist
 
-- **DNS** — `A` record `champions` → VPS IP, **proxied** (orange cloud).
+- **DNS** — two `A` records → VPS IP: `champions` (frontend) and `api.champions` (API).
 - **SSL/TLS** — mode **Full (strict)** with a Cloudflare Origin Certificate on the host.
 - **Always Use HTTPS** — on.
 - **HTTP/3 (with QUIC)** — on.
-- **Brotli** — on (Cloudflare edge; optional origin module in the Nginx conf).
-- **Caching** — cache static assets; the SPA's hashed `/assets/*` are immutable, while
-  `index.html` is served `no-cache`.
+- **Brotli** — on (Cloudflare edge; optional origin module in Nginx).
+- **Caching** — cache static assets; hashed `/assets/*` are immutable, `index.html` is `no-cache`.
 
-## Two-domain variant (optional)
-
-To split frontend and API onto separate hosts, give the API its own `server` block with
-`root .../backend/public` and the standard Laravel `try_files $uri /index.php?$query_string`,
-point the frontend at it via `VITE_API_URL`, and add the API origin to `config/cors.php`.
+> If proxying the API subdomain through Cloudflare (orange cloud) causes SSL/origin-cert
+> trouble, setting the `api` record to **DNS-only** (grey cloud) is acceptable — the API
+> still serves TLS directly from the origin certificate.
 
 ## If a queue worker is ever added
 

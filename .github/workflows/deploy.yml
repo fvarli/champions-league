@@ -1,0 +1,62 @@
+name: Deploy
+
+# Runs after a successful CI run on main, or manually.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    # Only deploy when triggered manually or when the upstream CI run succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_SSH_PORT || 22 }}
+          script: |
+            set -euo pipefail
+
+            cd /var/www/champions-league
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "==> Backend"
+            cd backend
+            composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            echo "==> Frontend"
+            cd ../frontend
+            npm ci
+            npm run build
+
+            echo "==> Permissions"
+            cd /var/www/champions-league
+            sudo chown -R deploy:www-data /var/www/champions-league
+            sudo chmod -R 775 backend/storage backend/bootstrap/cache
+
+            echo "==> Reload services"
+            sudo systemctl reload php8.3-fpm || sudo systemctl reload php-fpm
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            echo "==> Health check"
+            curl -fsS -H "Accept: application/json" https://api.champions.ferzendervarli.com/api/health

@@ -1,23 +1,32 @@
 <?php
 
-return [
+/*
+|--------------------------------------------------------------------------
+| Cross-Origin Resource Sharing (CORS) Configuration
+|--------------------------------------------------------------------------
+|
+| The frontend and API run on separate origins in production
+| (https://champions.ferzendervarli.com -> https://api.champions.ferzendervarli.com),
+| so the browser needs explicit CORS allowances. Origins come from the
+| FRONTEND_URLS env var (comma-separated) when set, otherwise from the
+| sensible defaults below. Only API routes are exposed and no credentials are
+| used (the project has no authentication). Wildcard origins are never used.
+|
+*/
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Allows the local Vite dev server (Vue) to call the API from a different
-    | origin during development. Only the API routes are exposed, and no
-    | credentials are used since the project has no authentication.
-    |
-    */
+$origins = array_values(array_filter(array_map(
+    'trim',
+    explode(',', (string) env('FRONTEND_URLS', '')),
+)));
+
+return [
 
     'paths' => ['api/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
+    'allowed_origins' => $origins !== [] ? $origins : [
+        'https://champions.ferzendervarli.com',
         'http://localhost:5173',
         'http://127.0.0.1:5173',
     ],
@@ -26,7 +35,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['X-Request-Id'],
 
     'max_age' => 0,
 
