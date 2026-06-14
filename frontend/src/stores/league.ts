@@ -136,6 +136,10 @@ export const useLeagueStore = defineStore('league', () => {
   const playNext = (): Promise<void> => runAction('next', () => leagueApi.playNext())
   const playAll = (): Promise<void> => runAction('all', () => leagueApi.playAll())
   const reset = (): Promise<void> => runAction('reset', () => leagueApi.reset())
+  const updateFixtureScore = (
+    id: number,
+    payload: { home_score: number; away_score: number },
+  ): Promise<void> => runAction('edit', () => leagueApi.updateFixtureScore(id, payload))
 
   function dismissError(): void {
     error.value = null
@@ -166,6 +170,7 @@ export const useLeagueStore = defineStore('league', () => {
     playNext,
     playAll,
     reset,
+    updateFixtureScore,
     dismissError,
   }
 })

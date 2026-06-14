@@ -6,6 +6,7 @@ import AppShell from '@/components/AppShell.vue'
 import ChampionBanner from '@/components/ChampionBanner.vue'
 import ChampionConfetti from '@/components/ChampionConfetti.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import EditFixtureScoreModal from '@/components/EditFixtureScoreModal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ErrorBanner from '@/components/ErrorBanner.vue'
 import FixtureWeekCard from '@/components/FixtureWeekCard.vue'
@@ -16,6 +17,7 @@ import SkeletonDashboard from '@/components/SkeletonDashboard.vue'
 import StandingsTable from '@/components/StandingsTable.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import { useLeagueStore } from '@/stores/league'
+import type { Fixture } from '@/types/league'
 
 const store = useLeagueStore()
 
@@ -54,6 +56,24 @@ const resetting = computed(() => store.activeAction === 'reset')
 async function onConfirmReset(): Promise<void> {
   await store.reset()
   confirmReset.value = false
+}
+
+const editOpen = ref(false)
+const editingFixture = ref<Fixture | null>(null)
+const editingScore = computed(() => store.activeAction === 'edit')
+
+function onEditFixture(fixture: Fixture): void {
+  editingFixture.value = fixture
+  editOpen.value = true
+}
+
+async function onSaveScore(home: number, away: number): Promise<void> {
+  if (!editingFixture.value) {
+    return
+  }
+
+  await store.updateFixtureScore(editingFixture.value.id, { home_score: home, away_score: away })
+  editOpen.value = false
 }
 
 const statusLabel = computed(() => {
@@ -145,6 +165,7 @@ const statusLabel = computed(() => {
                   :key="week.week"
                   :week="week"
                   :current="week.week === store.currentWeek"
+                  @edit="onEditFixture"
                 />
               </div>
             </section>
@@ -181,6 +202,14 @@ const statusLabel = computed(() => {
       :busy="resetting"
       @cancel="confirmReset = false"
       @confirm="onConfirmReset"
+    />
+
+    <EditFixtureScoreModal
+      :open="editOpen"
+      :fixture="editingFixture"
+      :busy="editingScore"
+      @cancel="editOpen = false"
+      @save="onSaveScore"
     />
   </AppShell>
 </template>

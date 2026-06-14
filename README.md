@@ -19,6 +19,7 @@
 - **Match simulation engine** — results driven by team strength, home advantage, and controlled randomness.
 - **Live standings** — points, goal difference, and tiebreakers recomputed from played fixtures.
 - **Prediction engine** — a Monte Carlo simulation over the remaining fixtures estimates each team's title chance (from the 4th week onward).
+- **Editable results** — edit any fixture's score; standings and predictions recalculate automatically.
 - **REST API** — clean JSON endpoints with meaningful status codes.
 - **Vue dashboard** — responsive, dark, premium analytics UI with toasts, skeletons, and transitions.
 - **Installable PWA** — web manifest, icons, and a custom favicon; add it to your home screen.
@@ -93,6 +94,7 @@ full examples.
 | GET    | `/api/fixtures`          | Fixtures grouped by week             |
 | GET    | `/api/standings`         | Current league table                 |
 | POST   | `/api/fixtures/generate` | Generate the schedule                |
+| PATCH  | `/api/fixtures/{id}/score` | Edit a fixture's score (0–5)       |
 | POST   | `/api/weeks/{week}/play` | Play a specific week                 |
 | POST   | `/api/weeks/next/play`   | Play the earliest unplayed week      |
 | POST   | `/api/league/play-all`   | Play all remaining fixtures          |
@@ -252,9 +254,6 @@ predictable starting point for both gameplay and tests.
 
 ## Future improvements
 
-- **Edit match results and recalculate standings** — the one optional extra from the
-  brief not yet implemented (standings already recompute from stored fixtures, so this
-  is a natural follow-up)
 - Authentication and per-user leagues
 - Multiple seasons and historical records
 - Team management (create, edit, rename)

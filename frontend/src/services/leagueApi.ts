@@ -47,4 +47,15 @@ export const leagueApi = {
       '/league/reset',
       { method: 'POST' },
     ),
+
+  updateFixtureScore: (
+    id: number,
+    payload: { home_score: number; away_score: number },
+  ): Promise<
+    ActionResponse<{ fixture: Fixture; standings: Standing[]; predictions: Prediction[] }>
+  > =>
+    request<ActionResponse<{ fixture: Fixture; standings: Standing[]; predictions: Prediction[] }>>(
+      `/fixtures/${id}/score`,
+      { method: 'PATCH', body: JSON.stringify(payload) },
+    ),
 }

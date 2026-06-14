@@ -10,6 +10,7 @@ Route::get('teams', [LeagueController::class, 'teams']);
 
 Route::get('fixtures', [LeagueController::class, 'fixtures']);
 Route::post('fixtures/generate', [LeagueController::class, 'generate']);
+Route::patch('fixtures/{fixture}/score', [LeagueController::class, 'updateScore']);
 
 Route::get('standings', [LeagueController::class, 'standings']);
 

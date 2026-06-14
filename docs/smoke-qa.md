@@ -38,6 +38,21 @@ php artisan league:generate-fixtures
   across weeks 1–6.
 - Running it a second time fails with a clear message and creates no duplicates.
 
+## Edit a result
+
+On the dashboard, hover a fixture and use the edit (pencil) action, or call the API
+directly:
+
+```bash
+curl -X PATCH http://127.0.0.1:8000/api/fixtures/1/score \
+  -H "Content-Type: application/json" \
+  -d '{"home_score": 3, "away_score": 0}'
+```
+
+- Editing an unplayed fixture marks it played; an edited fixture keeps its kickoff time.
+- The standings update immediately, and predictions refresh once available.
+- Out-of-range scores (negative, above 5, non-integer, null) return `422`.
+
 ## Demo reset
 
 Before screenshots or a recording, restore a clean starting point:

@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Actions\PlayAllRemainingFixturesAction;
 use App\Actions\PlayNextWeekAction;
 use App\Actions\PlayWeekAction;
+use App\Actions\UpdateFixtureScoreAction;
+use App\Exceptions\PredictionNotAvailableException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateFixtureScoreRequest;
 use App\Http\Resources\FixtureResource;
 use App\Http\Resources\PredictionResource;
 use App\Http\Resources\StandingResource;
@@ -100,6 +103,37 @@ class LeagueController extends Controller
     public function predictions(ChampionshipPredictionService $service): AnonymousResourceCollection
     {
         return PredictionResource::collection($service->predict());
+    }
+
+    public function updateScore(
+        UpdateFixtureScoreRequest $request,
+        Fixture $fixture,
+        UpdateFixtureScoreAction $action,
+        LeagueStandingsService $standings,
+        ChampionshipPredictionService $prediction,
+    ): JsonResponse {
+        $updated = $action->execute(
+            $fixture,
+            $request->integer('home_score'),
+            $request->integer('away_score'),
+        );
+
+        $data = [
+            'fixture' => (new FixtureResource($updated))->resolve(),
+            'standings' => StandingResource::collection($standings->calculate())->resolve(),
+        ];
+
+        try {
+            $data['predictions'] = PredictionResource::collection($prediction->predict())->resolve();
+        } catch (PredictionNotAvailableException $e) {
+            $data['predictions'] = [];
+            $data['prediction_notice'] = $e->getMessage();
+        }
+
+        return response()->json([
+            'message' => 'Fixture score updated.',
+            'data' => $data,
+        ]);
     }
 
     public function reset(DemoResetService $reset, LeagueStandingsService $standings): JsonResponse

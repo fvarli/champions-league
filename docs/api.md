@@ -39,6 +39,7 @@ Errors return `{ "message": "..." }`.
 | GET    | `/api/fixtures`          | List fixtures grouped by week          |
 | GET    | `/api/standings`         | Current league table                   |
 | POST   | `/api/fixtures/generate` | Generate the full schedule (12 matches)|
+| PATCH  | `/api/fixtures/{fixture}/score` | Edit a fixture's score          |
 | POST   | `/api/weeks/{week}/play` | Play a specific week                   |
 | POST   | `/api/weeks/next/play`   | Play the earliest unplayed week        |
 | POST   | `/api/league/play-all`   | Play all remaining fixtures            |
@@ -114,3 +115,24 @@ If the database is unreachable, it returns `503` with
   "data": { "teams": [ ... ], "fixtures": [], "standings": [ ... ] }
 }
 ```
+
+`PATCH /api/fixtures/{fixture}/score`
+
+Body: `{ "home_score": 2, "away_score": 1 }` (each an integer 0–5; invalid input returns
+`422`). Editing an unplayed fixture marks it played; an already played fixture keeps its
+original `played_at`. Standings always recompute from fixtures, so the response returns
+the refreshed table (and predictions when available).
+
+```json
+{
+  "message": "Fixture score updated.",
+  "data": {
+    "fixture": { "id": 1, "home_score": 2, "away_score": 1, "is_played": true, ... },
+    "standings": [ ... ],
+    "predictions": []
+  }
+}
+```
+
+When predictions are not yet available the response includes `"predictions": []` and a
+`"prediction_notice"` string instead of failing.

@@ -7,6 +7,8 @@ const props = withDefaults(defineProps<{ week: WeekFixtures; current?: boolean }
   current: false,
 })
 
+const emit = defineEmits<{ edit: [fixture: Fixture] }>()
+
 const allPlayed = computed(() => props.week.fixtures.every((fixture) => fixture.is_played))
 
 type Side = 'home' | 'away'
@@ -53,9 +55,9 @@ function isWinner(fixture: Fixture, side: Side): boolean {
       <li
         v-for="fixture in week.fixtures"
         :key="fixture.id"
-        class="rounded-xl bg-slate-950/40 px-3 py-2.5"
+        class="group flex items-center gap-1.5 rounded-xl bg-slate-950/40 px-3 py-2.5"
       >
-        <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <div class="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-2">
           <span
             class="truncate text-right text-sm"
             :class="isWinner(fixture, 'home') ? 'font-semibold text-white' : 'text-slate-300'"
@@ -83,6 +85,28 @@ function isWinner(fixture: Fixture, side: Side): boolean {
             {{ fixture.away_team.name }}
           </span>
         </div>
+
+        <button
+          type="button"
+          class="shrink-0 rounded-md p-1 text-slate-500 opacity-0 transition hover:bg-white/5 hover:text-slate-200 focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-60"
+          :aria-label="`Edit ${fixture.home_team.name} versus ${fixture.away_team.name} result`"
+          @click="emit('edit', fixture)"
+        >
+          <svg
+            class="h-3.5 w-3.5"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M13.5 3.5l3 3L7 16l-3.6.6.6-3.6 9.5-9.5Z"
+            />
+          </svg>
+        </button>
       </li>
     </ul>
   </div>

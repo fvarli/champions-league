@@ -26,7 +26,7 @@ evidence. Status is one of **Done** (required item implemented), **Extra**
 | --- | --- | --- |
 | "Play All" — auto-play to the end and list results by week | Extra | `PlayAllRemainingFixturesAction` returns played fixtures grouped by week; `POST /api/league/play-all`; dashboard "Play All Remaining" with a confirmation modal. |
 | Match results listed by week | Extra | `GET /api/fixtures` returns fixtures grouped by week; `FixtureWeekCard.vue` renders each week with scores and played/pending badges. |
-| Edit match results and recalculate standings | Future | Not implemented. There is no endpoint or UI to edit a played fixture's score. Standings are always recomputed from stored fixtures, so adding an edit endpoint that re-derives the table would be a natural follow-up. |
+| Edit match results and recalculate standings | Extra | `PATCH /api/fixtures/{fixture}/score` via `UpdateFixtureScoreAction` + `UpdateFixtureScoreRequest` (scores 0–5); editing an unplayed fixture marks it played, an edited fixture keeps its `played_at`. Standings and predictions recompute automatically. Dashboard: a per-fixture edit action opens `EditFixtureScoreModal.vue`. Tests in `EditFixtureScoreTest`. |
 
 ## Notes
 
