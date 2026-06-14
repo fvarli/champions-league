@@ -59,6 +59,10 @@ Open the dashboard → generate fixtures → play weeks → predictions unlock �
 | --- | --- |
 | ![Week played](docs/screenshots/03-week-played.png) | ![Prediction](docs/screenshots/04-prediction.png) |
 
+| Edit a result | Recalculated standings |
+| --- | --- |
+| ![Edit result](docs/screenshots/08-edit-result.png) | ![Edited standings](docs/screenshots/09-edited-standings.png) |
+
 | Play all (confirm) | Final table |
 | --- | --- |
 | ![Play all](docs/screenshots/05-play-all.png) | ![Final table](docs/screenshots/06-final-table.png) |
