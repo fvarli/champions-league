@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend:
     name: Backend
@@ -12,14 +16,38 @@ jobs:
     defaults:
       run:
         working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: champions_league
+          POSTGRES_USER: champions_user
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U champions_user -d champions_league"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: shivammathur/setup-php@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           extensions: pdo_pgsql, bcmath
           coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
@@ -29,14 +57,17 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Migrate and seed (PostgreSQL)
+        run: php artisan migrate:fresh --seed
+
+      - name: Tests
+        run: php artisan test
+
       - name: Code style (Pint)
         run: ./vendor/bin/pint --test
 
       - name: Static analysis (PHPStan)
         run: ./vendor/bin/phpstan analyse --no-progress
-
-      - name: Tests
-        run: php artisan test
 
   frontend:
     name: Frontend
@@ -44,10 +75,12 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm

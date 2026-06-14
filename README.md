@@ -1,5 +1,13 @@
 # Champions League Simulation
 
+[![CI](https://github.com/fvarli/champions-league/actions/workflows/ci.yml/badge.svg)](https://github.com/fvarli/champions-league/actions/workflows/ci.yml)
+![Laravel 12](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)
+![Vue 3](https://img.shields.io/badge/Vue-3-42B883?logo=vuedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![PHPStan level 6](https://img.shields.io/badge/PHPStan-level%206-2A6F97)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 > A football league simulator with double round-robin scheduling, a strength-based
 > match engine, live standings, and a championship prediction engine — served by a
 > Laravel REST API and a polished Vue 3 dashboard.
@@ -267,6 +275,14 @@ predictable starting point for both gameplay and tests.
 
 How each assignment requirement maps to the implementation is tracked in the
 [requirements audit](docs/requirements-audit.md).
+
+---
+
+## Contributing & security
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and
+quality gates (all enforced by [CI](.github/workflows/ci.yml)). To report a vulnerability,
+follow [SECURITY.md](SECURITY.md).
 
 ---
 
