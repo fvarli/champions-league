@@ -13,6 +13,7 @@ use App\Http\Resources\TeamResource;
 use App\Models\Fixture;
 use App\Models\Team;
 use App\Services\ChampionshipPredictionService;
+use App\Services\DemoResetService;
 use App\Services\FixtureGenerationService;
 use App\Services\LeagueStandingsService;
 use Illuminate\Http\JsonResponse;
@@ -99,5 +100,21 @@ class LeagueController extends Controller
     public function predictions(ChampionshipPredictionService $service): AnonymousResourceCollection
     {
         return PredictionResource::collection($service->predict());
+    }
+
+    public function reset(DemoResetService $reset, LeagueStandingsService $standings): JsonResponse
+    {
+        $reset->reset();
+
+        $teams = Team::query()->orderBy('id')->get();
+
+        return response()->json([
+            'message' => 'League reset to its initial state.',
+            'data' => [
+                'teams' => TeamResource::collection($teams)->resolve(),
+                'fixtures' => [],
+                'standings' => StandingResource::collection($standings->calculate())->resolve(),
+            ],
+        ]);
     }
 }

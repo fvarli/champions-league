@@ -26,7 +26,18 @@ HTTP request → Controller → Service / Action → Model → PostgreSQL
 - `app/Models` — Eloquent models.
 
 These boundaries keep business logic out of controllers and framework
-concerns out of the domain. No domain logic exists yet (Phase 1).
+concerns out of the domain.
+
+## API reliability
+
+A small set of middleware hardens the API without touching domain logic: a
+request-id middleware adds an `X-Request-Id` correlation id (reused if supplied)
+and merges it into JSON bodies from one central place; a force-JSON middleware
+keeps `/api/*` responses JSON even for framework errors; and a security-headers
+middleware applies conservative headers. API routes are rate limited to 60
+requests/minute per IP. A `GET /api/health` endpoint checks database
+connectivity, and `POST /api/league/reset` (or `php artisan league:demo-reset`)
+restores a clean demo state.
 
 ## Frontend structure
 

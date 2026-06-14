@@ -76,6 +76,38 @@ stored.
 
 ---
 
+## API
+
+All endpoints live under `/api` and return JSON. See [docs/api.md](docs/api.md) for
+full examples.
+
+| Method | Path                     | Description                          |
+| ------ | ------------------------ | ------------------------------------ |
+| GET    | `/api/health`            | Liveness/readiness probe (checks DB) |
+| GET    | `/api/teams`             | List teams                           |
+| GET    | `/api/fixtures`          | Fixtures grouped by week             |
+| GET    | `/api/standings`         | Current league table                 |
+| POST   | `/api/fixtures/generate` | Generate the schedule                |
+| POST   | `/api/weeks/{week}/play` | Play a specific week                 |
+| POST   | `/api/weeks/next/play`   | Play the earliest unplayed week      |
+| POST   | `/api/league/play-all`   | Play all remaining fixtures          |
+| POST   | `/api/league/reset`      | Reset to seeded teams, clear fixtures|
+| GET    | `/api/predictions`       | Championship chances                 |
+
+**Reliability** — every response carries an `X-Request-Id` header (and a matching
+`request_id` in the JSON body); a supplied `X-Request-Id` is reused for correlation.
+`/api/*` always returns JSON, sends conservative security headers, and is rate limited
+to **60 requests per minute per IP** (`429` when exceeded).
+
+**Demo reset** — clear fixtures and restore the four seeded teams for a clean
+walkthrough, via the API (`POST /api/league/reset`) or the CLI:
+
+```bash
+php artisan league:demo-reset
+```
+
+---
+
 ## Tech Stack
 
 **Backend**

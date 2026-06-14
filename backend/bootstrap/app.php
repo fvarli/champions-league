@@ -1,6 +1,9 @@
 <?php
 
 use App\Exceptions\Contracts\ProvidesHttpStatus;
+use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\RequestIdMiddleware;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,7 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Force JSON before routing so even unmatched /api/* errors stay JSON.
+        $middleware->prepend(ForceJsonResponse::class);
+
+        // Correlation id and security headers wrap every response.
+        $middleware->append(RequestIdMiddleware::class);
+        $middleware->append(SecurityHeadersMiddleware::class);
+
+        // Rate limit the API: 60 requests per minute per IP (see AppServiceProvider).
+        $middleware->appendToGroup('api', 'throttle:api');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (ProvidesHttpStatus $e, Request $request) {
