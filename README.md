@@ -187,6 +187,25 @@ The dashboard runs at `http://localhost:5173` and calls the API at
 
 ---
 
+## Deployment
+
+Production runs as a classic **native VPS** stack — **no Docker required**:
+**Cloudflare → Nginx → (Vue static + Laravel PHP-FPM 8.3) → native PostgreSQL**, on one
+host and one domain (the SPA and API share an origin, so no CORS in production).
+
+The full runbook, Nginx config, and scripts live in [`deployment/`](deployment/README.md).
+
+```bash
+# on the server, from /var/www/champions-league
+deployment/scripts/deploy.sh           # pull, build, migrate, cache, reload, health check
+deployment/scripts/rollback.sh         # revert to the previous commit
+```
+
+**Cloudflare checklist:** proxied `A` record · SSL **Full (strict)** · **Always Use HTTPS**
+· **HTTP/3** · **Brotli** · cache hashed `/assets/*` (immutable), `index.html` `no-cache`.
+
+---
+
 ## Testing
 
 **Backend**
