@@ -35,6 +35,15 @@ withDefaults(defineProps<{ subtitle?: string }>(), {
           </div>
         </div>
         <div class="flex items-center gap-3">
+          <div
+            class="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-400 md:inline-flex"
+          >
+            <span>Laravel 12</span>
+            <span class="text-slate-600" aria-hidden="true">•</span>
+            <span>Vue 3</span>
+            <span class="text-slate-600" aria-hidden="true">•</span>
+            <span class="text-emerald-300/80">Monte Carlo</span>
+          </div>
           <slot name="actions" />
         </div>
       </div>

@@ -65,6 +65,44 @@
   transition: transform 0.2s ease;
 }
 
+/* Menu — used for the custom dropdown (WeekPicker). */
+.menu-enter-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  transform-origin: top;
+}
+.menu-leave-active {
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+  transform-origin: top;
+}
+.menu-enter-from,
+.menu-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+
+/* Skeleton shimmer — a soft highlight sweeping across loading placeholders. */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.06), transparent);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fade-enter-active,
   .fade-leave-active,
@@ -72,7 +110,13 @@
   .pop-leave-active,
   .toast-enter-active,
   .toast-leave-active,
-  .toast-move {
+  .toast-move,
+  .menu-enter-active,
+  .menu-leave-active {
     transition: none;
+  }
+
+  .skeleton::after {
+    animation: none;
   }
 }

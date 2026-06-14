@@ -102,7 +102,7 @@ const statusLabel = computed(() => {
         />
 
         <div class="grid gap-6 lg:grid-cols-3">
-          <div class="space-y-6 lg:col-span-2">
+          <div class="min-w-0 space-y-6 lg:col-span-2">
             <StandingsTable :standings="store.standings" :complete="store.isComplete" />
 
             <section>
@@ -126,7 +126,7 @@ const statusLabel = computed(() => {
             </section>
           </div>
 
-          <div class="space-y-6">
+          <div class="min-w-0 space-y-6">
             <PredictionPanel
               :predictions="store.predictions"
               :notice="store.predictionNotice"
@@ -140,7 +140,7 @@ const statusLabel = computed(() => {
     <ConfirmModal
       :open="confirmPlayAll"
       title="Play all remaining fixtures?"
-      message="This simulates every unplayed match through to the end of the season. It can't be undone."
+      message="This will simulate all remaining fixtures and finalize the season."
       confirm-label="Play All"
       :busy="playingAll"
       @cancel="confirmPlayAll = false"

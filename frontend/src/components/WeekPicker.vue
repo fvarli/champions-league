@@ -69,7 +69,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentMoused
       </svg>
     </button>
 
-    <Transition name="pop">
+    <Transition name="menu">
       <ul
         v-if="open && options.length > 0"
         role="listbox"

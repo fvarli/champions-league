@@ -30,22 +30,42 @@ function barWidth(percentage: number): string {
 
     <EmptyState v-if="notice" title="Not available yet" :message="notice" icon="chart" />
 
-    <ul v-else class="space-y-3">
-      <li v-for="(prediction, index) in predictions" :key="prediction.team.id">
-        <div class="mb-1 flex items-center justify-between text-sm">
+    <ul v-else class="space-y-2">
+      <li
+        v-for="(prediction, index) in predictions"
+        :key="prediction.team.id"
+        class="rounded-xl p-2 transition-colors"
+        :class="index === 0 ? 'bg-amber-400/[0.06] ring-1 ring-amber-400/15' : ''"
+      >
+        <div class="mb-1.5 flex items-center justify-between text-sm">
           <span class="flex items-center gap-1.5">
-            <span v-if="index === 0" class="text-amber-300" aria-hidden="true">★</span>
+            <svg
+              v-if="index === 0"
+              class="h-3.5 w-3.5 text-amber-300"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M5 16 3 5l5.5 4L12 4l3.5 5L21 5l-2 11H5Zm0 2h14v2H5v-2Z" />
+            </svg>
             <span :class="index === 0 ? 'font-semibold text-white' : 'text-slate-300'">
               {{ prediction.team.name }}
             </span>
           </span>
-          <span class="tabular-nums font-medium text-slate-200">{{ prediction.percentage }}%</span>
+          <span
+            class="font-semibold tabular-nums"
+            :class="index === 0 ? 'text-amber-200' : 'text-slate-300'"
+          >
+            {{ prediction.percentage }}%
+          </span>
         </div>
-        <div class="h-2 overflow-hidden rounded-full bg-white/5">
+        <div class="h-2 overflow-hidden rounded-full bg-white/[0.04] shadow-inner shadow-black/20">
           <div
-            class="h-full rounded-full transition-[width] duration-500"
+            class="h-full rounded-full transition-[width] duration-700 ease-out"
             :class="
-              index === 0 ? 'bg-gradient-to-r from-amber-400 to-emerald-400' : 'bg-emerald-500/70'
+              index === 0
+                ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]'
+                : 'bg-gradient-to-r from-emerald-500/80 to-emerald-400/80'
             "
             :style="{ width: barWidth(prediction.percentage) }"
           />
