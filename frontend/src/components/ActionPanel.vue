@@ -145,7 +145,7 @@ function playSelectedWeek(): void {
         </button>
       </template>
 
-      <div class="flex w-full items-center gap-3 sm:ml-auto sm:w-auto">
+      <div v-if="hasFixtures" class="flex w-full items-center gap-3 sm:ml-auto sm:w-auto">
         <span
           v-if="isComplete"
           class="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-medium text-amber-300"

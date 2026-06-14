@@ -1,7 +1,7 @@
 # Champions League Simulation
 
 > A football league simulator with double round-robin scheduling, a strength-based
-> match engine, live standings, and Monte Carlo title prediction — served by a
+> match engine, live standings, and a championship prediction engine — served by a
 > Laravel REST API and a polished Vue 3 dashboard.
 
 [**▶ Watch the demo**](#demo) · [Features](#features) · [Screenshots](#screenshots) · [Architecture](#architecture) · [Local setup](#local-setup)
@@ -18,11 +18,11 @@
 - **Double round-robin fixtures** — 12 matches across 6 weeks, each pair home and away.
 - **Match simulation engine** — results driven by team strength, home advantage, and controlled randomness.
 - **Live standings** — points, goal difference, and tiebreakers recomputed from played fixtures.
-- **Monte Carlo championship prediction** — thousands of simulated seasons estimate each team's title chance.
+- **Prediction engine** — a Monte Carlo simulation over the remaining fixtures estimates each team's title chance (from the 4th week onward).
 - **REST API** — clean JSON endpoints with meaningful status codes.
 - **Vue dashboard** — responsive, dark, premium analytics UI with toasts, skeletons, and transitions.
 - **Installable PWA** — web manifest, icons, and a custom favicon; add it to your home screen.
-- **Laravel backend** — service/action layered architecture with full test coverage.
+- **Laravel backend** — service/action layered architecture, covered by automated tests.
 
 ---
 
@@ -252,12 +252,18 @@ predictable starting point for both gameplay and tests.
 
 ## Future improvements
 
+- **Edit match results and recalculate standings** — the one optional extra from the
+  brief not yet implemented (standings already recompute from stored fixtures, so this
+  is a natural follow-up)
 - Authentication and per-user leagues
 - Multiple seasons and historical records
 - Team management (create, edit, rename)
 - Player transfers affecting team strength
 - REST pagination and filtering
 - CI/CD pipeline with automated deployment
+
+How each assignment requirement maps to the implementation is tracked in the
+[requirements audit](docs/requirements-audit.md).
 
 ---
 
