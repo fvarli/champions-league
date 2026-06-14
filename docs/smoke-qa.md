@@ -51,7 +51,7 @@ curl -X PATCH http://127.0.0.1:8000/api/fixtures/1/score \
 
 - Editing an unplayed fixture marks it played; an edited fixture keeps its kickoff time.
 - The standings update immediately, and predictions refresh once available.
-- Out-of-range scores (negative, above 5, non-integer, null) return `422`.
+- Out-of-range scores (negative, above 20, non-integer, null) return `422`.
 
 ## Demo reset
 

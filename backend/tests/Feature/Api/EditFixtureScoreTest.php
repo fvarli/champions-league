@@ -118,7 +118,7 @@ class EditFixtureScoreTest extends TestCase
     {
         return [
             'negative' => [-1],
-            'above five' => [6],
+            'above twenty' => [21],
             'null' => [null],
             'non-integer' => [2.5],
         ];

@@ -18,12 +18,16 @@
 - **Double round-robin fixtures** — 12 matches across 6 weeks, each pair home and away.
 - **Match simulation engine** — results driven by team strength, home advantage, and controlled randomness.
 - **Live standings** — points, goal difference, and tiebreakers recomputed from played fixtures.
-- **Prediction engine** — a Monte Carlo simulation over the remaining fixtures estimates each team's title chance (from the 4th week onward).
+- **Prediction engine** — estimates each team's championship probability from the 4th week onward.
 - **Editable results** — edit any fixture's score; standings and predictions recalculate automatically.
 - **REST API** — clean JSON endpoints with meaningful status codes.
 - **Vue dashboard** — responsive, dark, premium analytics UI with toasts, skeletons, and transitions.
 - **Installable PWA** — web manifest, icons, and a custom favicon; add it to your home screen.
 - **Laravel backend** — service/action layered architecture, covered by automated tests.
+
+> Internally, the prediction engine runs a **Monte Carlo** simulation: it replays the
+> remaining fixtures 1000 times with the live match engine and reports how often each
+> team finishes first.
 
 ---
 
@@ -94,7 +98,7 @@ full examples.
 | GET    | `/api/fixtures`          | Fixtures grouped by week             |
 | GET    | `/api/standings`         | Current league table                 |
 | POST   | `/api/fixtures/generate` | Generate the schedule                |
-| PATCH  | `/api/fixtures/{id}/score` | Edit a fixture's score (0–5)       |
+| PATCH  | `/api/fixtures/{id}/score` | Edit a fixture's score (0–20)      |
 | POST   | `/api/weeks/{week}/play` | Play a specific week                 |
 | POST   | `/api/weeks/next/play`   | Play the earliest unplayed week      |
 | POST   | `/api/league/play-all`   | Play all remaining fixtures          |

@@ -118,10 +118,10 @@ If the database is unreachable, it returns `503` with
 
 `PATCH /api/fixtures/{fixture}/score`
 
-Body: `{ "home_score": 2, "away_score": 1 }` (each an integer 0–5; invalid input returns
-`422`). Editing an unplayed fixture marks it played; an already played fixture keeps its
-original `played_at`. Standings always recompute from fixtures, so the response returns
-the refreshed table (and predictions when available).
+Body: `{ "home_score": 7, "away_score": 0 }` — each score must be an integer between 0 and
+20; invalid input returns `422`. Editing an unplayed fixture marks it played; an already
+played fixture keeps its original `played_at`. Standings always recompute from fixtures, so
+the response returns the refreshed table (and predictions when available).
 
 ```json
 {

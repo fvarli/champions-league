@@ -20,7 +20,7 @@ const away = ref(0)
 const panel = ref<HTMLElement | null>(null)
 
 function clamp(value: number): number {
-  return Math.max(0, Math.min(5, Math.round(Number.isFinite(value) ? value : 0)))
+  return Math.max(0, Math.min(20, Math.round(Number.isFinite(value) ? value : 0)))
 }
 
 watch(
@@ -70,7 +70,7 @@ const inputClass =
           aria-label="Edit match result"
         >
           <h2 class="text-base font-semibold text-white">Edit result</h2>
-          <p class="mt-1 text-sm text-slate-400">Week {{ fixture.week }} · scores from 0 to 5.</p>
+          <p class="mt-1 text-sm text-slate-400">Week {{ fixture.week }} · scores from 0 to 20.</p>
 
           <form class="mt-6 flex items-center justify-center gap-4" @submit.prevent="save">
             <div class="flex-1 text-right">
@@ -83,7 +83,7 @@ const inputClass =
               v-model.number="home"
               type="number"
               min="0"
-              max="5"
+              max="20"
               step="1"
               inputmode="numeric"
               :class="inputClass"
@@ -97,7 +97,7 @@ const inputClass =
               v-model.number="away"
               type="number"
               min="0"
-              max="5"
+              max="20"
               step="1"
               inputmode="numeric"
               :class="inputClass"

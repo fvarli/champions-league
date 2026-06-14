@@ -34,14 +34,17 @@ Each fails clearly: an unknown week throws `InvalidWeekException`, a fully
 played week throws `WeekAlreadyPlayedException`, and a finished league throws
 `LeagueAlreadyCompleteException`.
 
-## Championship prediction
+## Championship Prediction Engine (Monte Carlo)
 
-`ChampionshipPredictionService` estimates each team's chance of finishing first
-with a **Monte Carlo** simulation: played fixtures are kept exactly as stored,
-the remaining fixtures are simulated many times (default 1000) using the same
-strength/home-advantage scoring as live matches, and the share of runs a team
-tops the table becomes its percentage. The standings sorting rules are reused
-directly, so prediction and live tables always agree.
+The championship prediction engine is based on a **Monte Carlo** simulation that
+repeatedly simulates the remaining fixtures and estimates each team's probability
+of winning the league.
+
+`ChampionshipPredictionService` keeps played fixtures exactly as stored and
+simulates the remaining ones many times (default 1000) using the same
+strength/home-advantage scoring as live matches; the share of runs a team tops the
+table becomes its percentage. The standings sorting rules are reused directly, so
+prediction and live tables always agree.
 
 - Nothing is persisted during prediction; stored fixtures are never modified.
 - Percentages total 100; a finished league gives the champion 100% and the rest

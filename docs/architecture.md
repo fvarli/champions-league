@@ -28,6 +28,15 @@ HTTP request → Controller → Service / Action → Model → PostgreSQL
 These boundaries keep business logic out of controllers and framework
 concerns out of the domain.
 
+## Prediction engine
+
+The championship prediction engine estimates each team's probability of finishing
+first. It is implemented with a **Monte Carlo** simulation: the remaining fixtures
+are simulated repeatedly (1000 runs by default) using the same match engine as live
+games. After each run the league table is recalculated and the champion recorded; a
+team's probability is the share of runs in which it finished first. Randomness is
+injected, so tests drive it with a seeded engine for deterministic results.
+
 ## API reliability
 
 A small set of middleware hardens the API without touching domain logic: a
