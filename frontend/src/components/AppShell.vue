@@ -47,7 +47,7 @@ withDefaults(defineProps<{ subtitle?: string }>(), {
             <span class="text-slate-600" aria-hidden="true">•</span>
             <span>Vue 3</span>
             <span class="text-slate-600" aria-hidden="true">•</span>
-            <span class="text-emerald-300/80">Monte Carlo</span>
+            <span class="text-emerald-300/80">Prediction Engine</span>
           </div>
           <slot name="actions" />
         </div>
