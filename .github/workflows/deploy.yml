@@ -22,17 +22,76 @@ jobs:
     steps:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1
+        env:
+          # --- Non-secret deploy configuration (repository variables, with defaults) ---
+          APP_DIR: ${{ vars.PROD_APP_DIR || '/var/www/champions-league' }}
+          BRANCH: ${{ vars.PROD_BRANCH || 'main' }}
+          API_HEALTH_URL: ${{ vars.PROD_API_HEALTH_URL || 'https://api.champions.ferzendervarli.com/api/health' }}
+          PHP_FPM_SERVICE: ${{ vars.PROD_PHP_FPM_SERVICE || 'php8.3-fpm' }}
+          WEB_USER: ${{ vars.PROD_WEB_USER || 'deploy' }}
+          WEB_GROUP: ${{ vars.PROD_WEB_GROUP || 'www-data' }}
+          # --- Application env (secrets; non-sensitive ones fall back to defaults) ---
+          APP_NAME: ${{ secrets.PROD_APP_NAME || 'Champions League' }}
+          APP_KEY: ${{ secrets.PROD_APP_KEY }}
+          APP_URL: ${{ secrets.PROD_APP_URL || 'https://api.champions.ferzendervarli.com' }}
+          FRONTEND_URL: ${{ secrets.PROD_FRONTEND_URL || 'https://champions.ferzendervarli.com' }}
+          FRONTEND_URLS: ${{ secrets.PROD_FRONTEND_URLS || 'https://champions.ferzendervarli.com,http://localhost:5173,http://127.0.0.1:5173' }}
+          DB_HOST: ${{ secrets.PROD_DB_HOST || '127.0.0.1' }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT || '5432' }}
+          DB_DATABASE: ${{ secrets.PROD_DB_DATABASE || 'champions_league' }}
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME || 'champions_user' }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
         with:
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           port: ${{ secrets.PROD_SSH_PORT || 22 }}
+          # Forward the configuration above into the remote shell.
+          envs: APP_DIR,BRANCH,API_HEALTH_URL,PHP_FPM_SERVICE,WEB_USER,WEB_GROUP,APP_NAME,APP_KEY,APP_URL,FRONTEND_URL,FRONTEND_URLS,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD
           script: |
             set -euo pipefail
 
-            cd /var/www/champions-league
+            cd "${APP_DIR}"
             git fetch --all
-            git reset --hard origin/main
+            git reset --hard "origin/${BRANCH}"
+
+            # --- Generate backend/.env from injected config (never logged) ---
+            echo "==> Writing backend/.env"
+            umask 077
+            cat > backend/.env <<EOF
+            APP_NAME="${APP_NAME}"
+            APP_ENV=production
+            APP_KEY="${APP_KEY}"
+            APP_DEBUG=false
+            APP_URL="${APP_URL}"
+
+            APP_LOCALE=en
+            APP_FALLBACK_LOCALE=en
+
+            LOG_CHANNEL=stack
+            LOG_LEVEL=warning
+
+            FRONTEND_URL="${FRONTEND_URL}"
+            FRONTEND_URLS="${FRONTEND_URLS}"
+
+            DB_CONNECTION=pgsql
+            DB_HOST="${DB_HOST}"
+            DB_PORT="${DB_PORT}"
+            DB_DATABASE="${DB_DATABASE}"
+            DB_USERNAME="${DB_USERNAME}"
+            DB_PASSWORD="${DB_PASSWORD}"
+
+            SESSION_DRIVER=database
+            SESSION_SECURE_COOKIE=true
+            CACHE_STORE=database
+            QUEUE_CONNECTION=sync
+            EOF
+
+            # --- Generate frontend/.env (API origin, no /api suffix) ---
+            echo "==> Writing frontend/.env"
+            cat > frontend/.env <<EOF
+            VITE_API_URL=${APP_URL}
+            EOF
 
             echo "==> Backend"
             cd backend
@@ -50,14 +109,14 @@ jobs:
             npm run build
 
             echo "==> Permissions"
-            cd /var/www/champions-league
-            sudo chown -R deploy:www-data /var/www/champions-league
+            cd "${APP_DIR}"
+            sudo chown -R "${WEB_USER}:${WEB_GROUP}" "${APP_DIR}"
             sudo chmod -R 775 backend/storage backend/bootstrap/cache
 
             echo "==> Reload services"
-            sudo systemctl reload php8.3-fpm || sudo systemctl reload php-fpm
+            sudo systemctl reload "${PHP_FPM_SERVICE}" || sudo systemctl reload php-fpm
             sudo nginx -t
             sudo systemctl reload nginx
 
             echo "==> Health check"
-            curl -fsS -H "Accept: application/json" https://api.champions.ferzendervarli.com/api/health
+            curl -fsS -H "Accept: application/json" "${API_HEALTH_URL}"

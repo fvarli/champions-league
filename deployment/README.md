@@ -108,12 +108,52 @@ server {
 ## Deploying updates
 
 **Automated (CI/CD):** pushing to `main` runs [CI](../.github/workflows/ci.yml); on success
-the [deploy workflow](../.github/workflows/deploy.yml) SSHes in and runs the steps below. It
-needs repository secrets `PROD_HOST`, `PROD_USER`, `PROD_SSH_KEY`, and optionally
-`PROD_SSH_PORT`.
+the [deploy workflow](../.github/workflows/deploy.yml) SSHes in and runs the steps below — it
+is **fully secret-driven** and **generates `backend/.env` and `frontend/.env` on the server**
+from the GitHub secrets/variables listed next (no production secrets are committed to the repo).
 
 **Manual:** from `/var/www/champions-league`, `deployment/scripts/deploy.sh` performs the
-same pull → install → migrate → cache → build → reload → health-check flow.
+same pull → install → migrate → cache → build → reload → health-check flow (it expects the
+`.env` files to already exist on the server).
+
+## GitHub Actions secrets & variables
+
+Repository **secrets** are required for automated deploy. Secrets hold SSH access and
+sensitive app config; variables hold non-sensitive deploy configuration. Optional values
+fall back to sensible defaults in the workflow, so only the required ones are mandatory.
+
+**Secrets** (`Settings → Secrets and variables → Actions → Secrets`)
+
+| Secret | Required | Purpose / default |
+| --- | --- | --- |
+| `PROD_HOST` | ✅ | Server hostname/IP |
+| `PROD_USER` | ✅ | SSH user |
+| `PROD_SSH_KEY` | ✅ | SSH private key |
+| `PROD_SSH_PORT` | — | SSH port (default `22`) |
+| `PROD_APP_KEY` | ✅ | Laravel `APP_KEY` (e.g. `base64:…`) |
+| `PROD_DB_PASSWORD` | ✅ | PostgreSQL password |
+| `PROD_DB_USERNAME` | recommended | default `champions_user` |
+| `PROD_DB_DATABASE` | recommended | default `champions_league` |
+| `PROD_APP_NAME` | optional | default `Champions League` |
+| `PROD_APP_URL` | optional | default `https://api.champions.ferzendervarli.com` |
+| `PROD_FRONTEND_URL` | optional | default `https://champions.ferzendervarli.com` |
+| `PROD_FRONTEND_URLS` | optional | default `https://champions.ferzendervarli.com,http://localhost:5173,http://127.0.0.1:5173` |
+| `PROD_DB_HOST` | optional | default `127.0.0.1` |
+| `PROD_DB_PORT` | optional | default `5432` |
+
+**Variables** (`… → Variables`)
+
+| Variable | Default |
+| --- | --- |
+| `PROD_APP_DIR` | `/var/www/champions-league` |
+| `PROD_BRANCH` | `main` |
+| `PROD_API_HEALTH_URL` | `https://api.champions.ferzendervarli.com/api/health` |
+| `PROD_PHP_FPM_SERVICE` | `php8.3-fpm` |
+| `PROD_WEB_USER` | `deploy` |
+| `PROD_WEB_GROUP` | `www-data` |
+
+The workflow writes these into the remote shell and renders the `.env` files there;
+secret values are never echoed to the logs.
 
 ## Rolling back
 

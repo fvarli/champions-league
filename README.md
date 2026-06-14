@@ -211,8 +211,12 @@ deployment/scripts/rollback.sh         # revert to the previous commit
 ```
 
 Pushing to `main` runs [CI](.github/workflows/ci.yml); on success the
-[deploy workflow](.github/workflows/deploy.yml) ships over SSH. It requires repository
-**secrets**: `PROD_HOST`, `PROD_USER`, `PROD_SSH_KEY`, and (optional) `PROD_SSH_PORT`.
+[deploy workflow](.github/workflows/deploy.yml) ships over SSH. It is fully secret-driven:
+the server's `backend/.env` and `frontend/.env` are **generated during deployment** from
+GitHub **secrets** (SSH access `PROD_HOST` / `PROD_USER` / `PROD_SSH_KEY` / optional
+`PROD_SSH_PORT`, plus app secrets `PROD_APP_KEY` and `PROD_DB_PASSWORD`) and **variables**
+(`PROD_APP_DIR`, `PROD_BRANCH`, …). No production secrets are committed to the repository.
+The full list of secrets and variables is in [`deployment/`](deployment/README.md#github-actions-secrets--variables).
 
 **Cloudflare checklist:** `A` records for `champions` and `api.champions` · SSL **Full
 (strict)** · **Always Use HTTPS** · **HTTP/3** · **Brotli** · cache hashed `/assets/*`
