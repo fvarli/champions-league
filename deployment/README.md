@@ -116,6 +116,10 @@ from the GitHub secrets/variables listed next (no production secrets are committ
 same pull → install → migrate → cache → build → reload → health-check flow (it expects the
 `.env` files to already exist on the server).
 
+> The deploy runs as `root` while the checkout is owned by `deploy:www-data`, so the
+> workflow and scripts run `git config --global --add safe.directory "$APP_DIR"` before any
+> git operation to avoid Git's "dubious ownership" error.
+
 ## GitHub Actions secrets & variables
 
 Repository **secrets** are required for automated deploy. Secrets hold SSH access and

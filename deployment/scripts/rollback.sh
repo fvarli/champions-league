@@ -19,6 +19,9 @@ log() { printf '\n\033[1;33m==>\033[0m %s\n' "$1"; }
 
 cd "$APP_DIR"
 
+# Deploy may run as root against a repo owned by deploy:www-data.
+git config --global --add safe.directory "$APP_DIR"
+
 log "Rolling back to ${TARGET} (current $(git rev-parse --short HEAD))"
 git fetch --prune origin
 git reset --hard "$TARGET"
