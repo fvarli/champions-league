@@ -57,8 +57,9 @@ jobs:
             git fetch --all
             git reset --hard "origin/${BRANCH}"
 
-            # --- Generate backend/.env from injected config (never logged) ---
-            echo "==> Writing backend/.env"
+            # --- Generate env files with a restrictive umask, then restore it ---
+            echo "==> Writing env files"
+            OLD_UMASK="$(umask)"
             umask 077
             cat > backend/.env <<EOF
             APP_NAME="${APP_NAME}"
@@ -90,10 +91,11 @@ jobs:
             EOF
 
             # --- Generate frontend/.env (API origin, no /api suffix) ---
-            echo "==> Writing frontend/.env"
             cat > frontend/.env <<EOF
             VITE_API_URL=${APP_URL}
             EOF
+            # Restore the umask so the build does not inherit 077.
+            umask "${OLD_UMASK}"
 
             echo "==> Backend"
             cd backend
@@ -112,6 +114,9 @@ jobs:
 
             echo "==> Permissions"
             cd "${APP_DIR}"
+            # Make the freshly built SPA readable by the web server; modes survive the chown.
+            find frontend/dist -type d -exec chmod 755 {} \;
+            find frontend/dist -type f -exec chmod 644 {} \;
             sudo chown -R "${WEB_USER}:${WEB_GROUP}" "${APP_DIR}"
             sudo chmod -R 775 backend/storage backend/bootstrap/cache
 

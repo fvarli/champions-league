@@ -46,6 +46,10 @@ cd "$APP_DIR/frontend"
 npm ci
 npm run build
 
+# Ensure the web server (www-data) can read the built SPA.
+find "$APP_DIR/frontend/dist" -type d -exec chmod 755 {} \;
+find "$APP_DIR/frontend/dist" -type f -exec chmod 644 {} \;
+
 log "Reloading PHP-FPM and Nginx"
 sudo systemctl reload "$PHP_FPM_SERVICE"
 sudo nginx -t
