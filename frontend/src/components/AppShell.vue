@@ -6,8 +6,13 @@ withDefaults(defineProps<{ subtitle?: string }>(), {
 
 <template>
   <div class="relative min-h-screen bg-slate-950 text-slate-200">
+    <div class="hero-grid pointer-events-none fixed inset-0" aria-hidden="true" />
     <div
       class="pointer-events-none fixed inset-x-0 top-0 h-80 bg-gradient-to-b from-emerald-500/10 via-sky-500/5 to-transparent"
+      aria-hidden="true"
+    />
+    <div
+      class="pointer-events-none fixed left-1/2 top-0 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-emerald-500/5 blur-3xl"
       aria-hidden="true"
     />
 

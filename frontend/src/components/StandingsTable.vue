@@ -40,7 +40,7 @@ function formatGoalDifference(value: number): string {
             <th scope="col" class="px-4 py-3 text-center font-medium">Pts</th>
           </tr>
         </thead>
-        <tbody>
+        <TransitionGroup tag="tbody" name="row">
           <tr
             v-for="(row, index) in standings"
             :key="row.team.id"
@@ -122,7 +122,7 @@ function formatGoalDifference(value: number): string {
               {{ row.points }}
             </td>
           </tr>
-        </tbody>
+        </TransitionGroup>
       </table>
     </div>
   </div>

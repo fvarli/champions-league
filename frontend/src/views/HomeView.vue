@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import ActionPanel from '@/components/ActionPanel.vue'
 import AppShell from '@/components/AppShell.vue'
 import ChampionBanner from '@/components/ChampionBanner.vue'
+import ChampionConfetti from '@/components/ChampionConfetti.vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ErrorBanner from '@/components/ErrorBanner.vue'
 import FixtureWeekCard from '@/components/FixtureWeekCard.vue'
+import LiveTicker from '@/components/LiveTicker.vue'
 import MetricCard from '@/components/MetricCard.vue'
 import PredictionPanel from '@/components/PredictionPanel.vue'
 import SkeletonDashboard from '@/components/SkeletonDashboard.vue'
@@ -18,6 +20,25 @@ import { useLeagueStore } from '@/stores/league'
 const store = useLeagueStore()
 
 onMounted(() => store.loadDashboard())
+
+// Briefly celebrate when a champion is crowned (i.e. the season just finished).
+const showConfetti = ref(false)
+let confettiTimer: ReturnType<typeof setTimeout> | undefined
+
+watch(
+  () => store.champion?.team.id,
+  (id, previousId) => {
+    if (id && id !== previousId) {
+      showConfetti.value = true
+      clearTimeout(confettiTimer)
+      confettiTimer = setTimeout(() => {
+        showConfetti.value = false
+      }, 4500)
+    }
+  },
+)
+
+onBeforeUnmount(() => clearTimeout(confettiTimer))
 
 const confirmPlayAll = ref(false)
 const playingAll = computed(() => store.activeAction === 'all')
@@ -62,6 +83,7 @@ const statusLabel = computed(() => {
     </template>
 
     <ToastHost />
+    <ChampionConfetti v-if="showConfetti" />
 
     <Transition name="fade" mode="out-in">
       <SkeletonDashboard v-if="store.loading" key="skeleton" />
@@ -101,6 +123,8 @@ const statusLabel = computed(() => {
           @reset="confirmReset = true"
         />
 
+        <LiveTicker v-if="store.latestResults.length > 0" :fixtures="store.latestResults" />
+
         <div class="grid gap-6 lg:grid-cols-3">
           <div class="min-w-0 space-y-6 lg:col-span-2">
             <StandingsTable :standings="store.standings" :complete="store.isComplete" />
@@ -131,6 +155,7 @@ const statusLabel = computed(() => {
               :predictions="store.predictions"
               :notice="store.predictionNotice"
               :is-complete="store.isComplete"
+              :played="store.playedFixtures"
             />
           </div>
         </div>

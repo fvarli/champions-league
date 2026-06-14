@@ -1,12 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import EmptyState from '@/components/EmptyState.vue'
 import type { Prediction } from '@/types/league'
 
-defineProps<{
+const UNLOCK_AT = 8
+
+const props = defineProps<{
   predictions: Prediction[]
   notice: string | null
   isComplete: boolean
+  played: number
 }>()
+
+const unlockProgress = computed(() => Math.min(props.played, UNLOCK_AT))
+const unlockWidth = computed(() => `${(unlockProgress.value / UNLOCK_AT) * 100}%`)
 
 function barWidth(percentage: number): string {
   return `${Math.max(2, Math.min(100, percentage))}%`
@@ -28,7 +36,28 @@ function barWidth(percentage: number): string {
       </span>
     </div>
 
-    <EmptyState v-if="notice" title="Not available yet" :message="notice" icon="chart" />
+    <div v-if="notice" class="space-y-4">
+      <EmptyState
+        title="Not available yet"
+        message="Prediction unlocks after 8 played fixtures."
+        icon="chart"
+      />
+
+      <div class="px-1">
+        <div class="mb-1.5 flex items-center justify-between text-xs">
+          <span class="text-slate-400">Fixtures played</span>
+          <span class="font-medium tabular-nums text-slate-300">
+            {{ unlockProgress }} / {{ UNLOCK_AT }}
+          </span>
+        </div>
+        <div class="h-2 overflow-hidden rounded-full bg-white/[0.04] shadow-inner shadow-black/20">
+          <div
+            class="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-400 transition-[width] duration-700 ease-out"
+            :style="{ width: unlockWidth }"
+          />
+        </div>
+      </div>
+    </div>
 
     <ul v-else class="space-y-2">
       <li

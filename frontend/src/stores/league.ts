@@ -44,6 +44,14 @@ export const useLeagueStore = defineStore('league', () => {
     isComplete.value ? (standings.value[0] ?? null) : null,
   )
 
+  // The most recently played fixtures (latest week first) for the live ticker.
+  const latestResults = computed(() =>
+    allFixtures.value
+      .filter((fixture) => fixture.is_played)
+      .sort((a, b) => b.week - a.week || a.id - b.id)
+      .slice(0, 3),
+  )
+
   const busy = computed(() => activeAction.value !== null)
 
   async function loadPredictions(): Promise<void> {
@@ -150,6 +158,7 @@ export const useLeagueStore = defineStore('league', () => {
     playableWeeks,
     currentWeek,
     champion,
+    latestResults,
     busy,
     loadDashboard,
     generate,

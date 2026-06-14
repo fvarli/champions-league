@@ -103,6 +103,50 @@
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
+/* Standings rows — smooth reorder when the table changes. */
+.row-move {
+  transition: transform 0.45s ease;
+}
+.row-enter-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.row-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* Hero background — a faint grid that fades out toward the page. */
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, black 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, black 35%, transparent 100%);
+}
+
+/* Champion confetti — brief celebratory fall. */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-12vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(112vh) translateX(var(--drift)) rotate(var(--rot));
+    opacity: 0.9;
+  }
+}
+.confetti-piece {
+  animation-name: confetti-fall;
+  animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  animation-fill-mode: both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fade-enter-active,
   .fade-leave-active,
@@ -112,11 +156,17 @@
   .toast-leave-active,
   .toast-move,
   .menu-enter-active,
-  .menu-leave-active {
+  .menu-leave-active,
+  .row-move,
+  .row-enter-active {
     transition: none;
   }
 
   .skeleton::after {
     animation: none;
+  }
+
+  .confetti-piece {
+    display: none;
   }
 }
